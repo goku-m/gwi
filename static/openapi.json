@@ -52,24 +52,6 @@
                             "status",
                             "response_time"
                           ]
-                        },
-                        "redis": {
-                          "type": "object",
-                          "properties": {
-                            "status": {
-                              "type": "string"
-                            },
-                            "response_time": {
-                              "type": "string"
-                            },
-                            "error": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "status",
-                            "response_time"
-                          ]
                         }
                       },
                       "required": [

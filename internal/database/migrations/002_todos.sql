@@ -51,3 +51,6 @@ CREATE TRIGGER set_updated_at_farmers
     BEFORE UPDATE ON farmers
     FOR EACH ROW
     EXECUTE FUNCTION trigger_set_updated_at();
+
+
+

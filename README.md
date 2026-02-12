@@ -49,19 +49,9 @@ backend/
 
 ### Observability
 
-- **New Relic APM**: Application performance monitoring
 - **Structured Logging**: JSON logs with Zerolog
-- **Request Tracing**: Distributed tracing support
 - **Health Checks**: Readiness and liveness endpoints
 - **Custom Metrics**: Business-specific monitoring
-
-### Background Jobs
-
-- **Asynq**: Redis-based distributed task queue
-- **Priority Queues**: Critical, default, and low priority
-- **Job Scheduling**: Cron-like task scheduling
-- **Retry Logic**: Exponential backoff for failed jobs
-- **Job Monitoring**: Real-time job status tracking
 
 ### Email Service
 
@@ -82,7 +72,6 @@ backend/
 
 - Go 1.24+
 - PostgreSQL 16+
-- Redis 8+
 - Task (taskfile.dev)
 
 ### Installation
@@ -226,12 +215,6 @@ Log levels:
 - Prepared statements for frequent queries
 - Indexes on commonly queried fields
 - Query optimization with EXPLAIN ANALYZE
-
-### Caching
-
-- Redis for session storage
-- In-memory caching for hot data
-- HTTP caching headers
 
 ### Concurrency
 

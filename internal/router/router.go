@@ -46,7 +46,7 @@ func NewRouter(s *server.Server, h *handler.Handlers) *echo.Echo {
 		middlewares.Global.CORS(),
 		middlewares.Global.Secure(),
 		middleware.RequestID(),
-		middlewares.Tracing.NewRelicMiddleware(),
+		middlewares.Tracing.RequestTracingMiddleware(),
 		middlewares.Tracing.EnhanceTracing(),
 		middlewares.ContextEnhancer.EnhanceContext(),
 		middlewares.Global.RequestLogger(),

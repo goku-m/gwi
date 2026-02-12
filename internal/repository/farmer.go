@@ -339,10 +339,14 @@ func (r *FarmerRepository) UpdateFarmer(ctx context.Context, zoneName string, pa
 
 func (r *FarmerRepository) DeleteFarmer(ctx context.Context, zoneName string, farmerID uuid.UUID) error {
 	stmt := `
-		DELETE FROM farmers
+		UPDATE farmers
+		SET
+			deleted_at = (EXTRACT(EPOCH FROM now()) * 1000)::bigint,
+			updated_at = now()
 		WHERE
 			id = @farmer_id
 			AND zone_name = @zone_name
+			AND deleted_at IS NULL
 	`
 
 	result, err := r.server.DB.Pool.Exec(ctx, stmt, pgx.NamedArgs{
@@ -409,7 +413,7 @@ type SyncFarmerRow struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	DeletedAtNull bool
-	DeletedAt     time.Time
+	DeletedAtMs   int64
 }
 
 type SyncRepository struct {
@@ -447,7 +451,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 				created_at,
 				updated_at,
 				(deleted_at IS NULL) AS deleted_at_null,
-				COALESCE(deleted_at, 'epoch'::timestamptz) AS deleted_at
+				COALESCE(deleted_at, 0) AS deleted_at_ms
 			FROM farmers
 			WHERE zone_name = @zone_name
 			  AND deleted_at IS NULL
@@ -463,7 +467,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			if err := rows.Scan(
 				&row.ID, &row.ZoneName, &row.Name, &row.NationalID, &row.Community,
 				&row.Prefinance, &row.Balance, &row.TotalKg, &row.TotalAmount,
-				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAt,
+				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAtMs,
 			); err != nil {
 				return nil, nil, nil, 0, fmt.Errorf("scan farmer row: %w", err)
 			}
@@ -489,7 +493,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			created_at,
 			updated_at,
 			(deleted_at IS NULL) AS deleted_at_null,
-			COALESCE(deleted_at, 'epoch'::timestamptz) AS deleted_at
+			COALESCE(deleted_at, 0) AS deleted_at_ms
 		FROM farmers
 		WHERE zone_name = @zone_name
 		  AND deleted_at IS NULL
@@ -510,7 +514,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			created_at,
 			updated_at,
 			(deleted_at IS NULL) AS deleted_at_null,
-			COALESCE(deleted_at, 'epoch'::timestamptz) AS deleted_at
+			COALESCE(deleted_at, 0) AS deleted_at_ms
 		FROM farmers
 		WHERE zone_name = @zone_name
 		  AND deleted_at IS NULL
@@ -523,10 +527,10 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 		FROM farmers
 		WHERE zone_name = @zone_name
 		  AND deleted_at IS NOT NULL
-		  AND deleted_at > @last
+		  AND deleted_at > @last_ms
 	`
 
-	args := pgx.NamedArgs{"zone_name": zoneName, "last": last}
+	args := pgx.NamedArgs{"zone_name": zoneName, "last": last, "last_ms": lastPulledAtMs}
 
 	// created
 	{
@@ -540,7 +544,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			if err := rows.Scan(
 				&row.ID, &row.ZoneName, &row.Name, &row.NationalID, &row.Community,
 				&row.Prefinance, &row.Balance, &row.TotalKg, &row.TotalAmount,
-				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAt,
+				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAtMs,
 			); err != nil {
 				return nil, nil, nil, 0, fmt.Errorf("scan created farmer: %w", err)
 			}
@@ -560,7 +564,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			if err := rows.Scan(
 				&row.ID, &row.ZoneName, &row.Name, &row.NationalID, &row.Community,
 				&row.Prefinance, &row.Balance, &row.TotalKg, &row.TotalAmount,
-				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAt,
+				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAtMs,
 			); err != nil {
 				return nil, nil, nil, 0, fmt.Errorf("scan updated farmer: %w", err)
 			}
@@ -624,7 +628,7 @@ func (r *FarmerRepository) PushFarmers(
 
 	deleteSQL := `
 		UPDATE farmers
-		SET deleted_at = now(), updated_at = now()
+		SET deleted_at = (EXTRACT(EPOCH FROM now()) * 1000)::bigint, updated_at = now()
 		WHERE id = @id AND zone_name = @zone_name
 	`
 
@@ -652,12 +656,17 @@ func (r *FarmerRepository) PushFarmers(
 	}
 
 	br := tx.SendBatch(ctx, b)
-	defer br.Close()
 
 	for i := 0; i < b.Len(); i++ {
 		if _, err := br.Exec(); err != nil {
+			_ = br.Close()
 			return fmt.Errorf("batch exec failed: %w", err)
 		}
+	}
+
+	// Close batch results before commit; otherwise the tx connection remains busy.
+	if err := br.Close(); err != nil {
+		return fmt.Errorf("close batch: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -670,8 +679,7 @@ func (r *FarmerRepository) PushFarmers(
 func farmerSyncFromRow(row SyncFarmerRow) farmer.FarmerSyncRecord {
 	var deletedAt *int64
 	if !row.DeletedAtNull {
-		ms := timeToMs(row.DeletedAt)
-		deletedAt = &ms
+		deletedAt = &row.DeletedAtMs
 	}
 
 	return farmer.FarmerSyncRecord{

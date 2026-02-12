@@ -26,7 +26,7 @@ func main() {
 		panic("failed to load config: " + err.Error())
 	}
 
-	// Initialize New Relic logger service
+	// Initialize logger service
 	loggerService := logger.NewLoggerService(cfg.Observability)
 	defer loggerService.Shutdown()
 

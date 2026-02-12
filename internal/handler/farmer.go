@@ -171,12 +171,26 @@ func (h *FarmerHandler) Pull(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	// Watermelon sync expects array fields, not null.
+	created := result.Created
+	updated := result.Updated
+	deleted := result.Deleted
+	if created == nil {
+		created = []farmer.FarmerSyncRecord{}
+	}
+	if updated == nil {
+		updated = []farmer.FarmerSyncRecord{}
+	}
+	if deleted == nil {
+		deleted = []string{}
+	}
+
 	return c.JSON(http.StatusOK, PullResponse{
 		Changes: map[string]any{
 			"farmers": map[string]any{
-				"created": result.Created,
-				"updated": result.Updated,
-				"deleted": result.Deleted,
+				"created": created,
+				"updated": updated,
+				"deleted": deleted,
 			},
 		},
 		Timestamp: result.Timestamp,
