@@ -88,6 +88,7 @@ func (r *FarmerRepository) GetFarmerByID(ctx context.Context, zoneName string, f
 		WHERE
 			t.id = @id
 			AND t.zone_name = @zone_name
+			AND t.deleted_at IS NULL
 	`
 
 	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
@@ -120,6 +121,7 @@ func (r *FarmerRepository) CheckFarmerExists(ctx context.Context, zoneName strin
 		WHERE
 			id = @id
 			AND zone_name = @zone_name
+			AND deleted_at IS NULL
 	`
 
 	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
@@ -158,7 +160,7 @@ func (r *FarmerRepository) GetFarmers(
 	args := pgx.NamedArgs{
 		"zone_name": zoneName,
 	}
-	conditions := []string{"t.zone_name = @zone_name"}
+	conditions := []string{"t.zone_name = @zone_name", "t.deleted_at IS NULL"}
 
 	if query != nil {
 		if query.Search != nil && strings.TrimSpace(*query.Search) != "" {
@@ -383,6 +385,7 @@ func (r *FarmerRepository) GetZoneStats(ctx context.Context, zoneName string) (*
 			farmers
 		WHERE
 			zone_name = @zone_name
+			AND deleted_at IS NULL
 	`
 
 	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
@@ -611,7 +614,9 @@ func (r *FarmerRepository) PushFarmers(
 		) VALUES (
 			@id, @zone_name, @name, @national_id, @community,
 			@prefinance, @balance, @total_kg_brought, @total_amount,
-			now(), now(), NULL
+			to_timestamp(@created_at_ms::double precision / 1000.0),
+			to_timestamp(@updated_at_ms::double precision / 1000.0),
+			NULL
 		)
 		ON CONFLICT (id) DO UPDATE SET
 			name = EXCLUDED.name,
@@ -621,7 +626,7 @@ func (r *FarmerRepository) PushFarmers(
 			balance = EXCLUDED.balance,
 			total_kg_brought = EXCLUDED.total_kg_brought,
 			total_amount = EXCLUDED.total_amount,
-			updated_at = now(),
+			updated_at = EXCLUDED.updated_at,
 			deleted_at = NULL
 		WHERE farmers.zone_name = EXCLUDED.zone_name
 	`
@@ -645,6 +650,8 @@ func (r *FarmerRepository) PushFarmers(
 			"balance":          f.Balance,
 			"total_kg_brought": f.TotalKgBrought,
 			"total_amount":     f.TotalAmount,
+			"created_at_ms":    f.CreatedAt,
+			"updated_at_ms":    f.UpdatedAt,
 		})
 	}
 

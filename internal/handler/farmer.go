@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goku-m/gwi/internal/model"
 	"github.com/goku-m/gwi/internal/model/farmer"
 	"github.com/goku-m/gwi/internal/server"
 	"github.com/goku-m/gwi/internal/service"
+	"github.com/goku-m/gwi/internal/validation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -86,15 +86,18 @@ func (h *FarmerHandler) GetFarmerByID(c echo.Context) error {
 }
 
 func (h *FarmerHandler) GetFarmers(c echo.Context) error {
-	return Handle(
-		h.Handler,
-		func(c echo.Context, query *farmer.GetFarmersQuery) (*model.PaginatedResponse[farmer.PopulatedFarmer], error) {
-			zoneName := getZoneName(c)
-			return h.farmerService.GetFarmers(c, zoneName, query)
-		},
-		http.StatusOK,
-		&farmer.GetFarmersQuery{},
-	)(c)
+	query := &farmer.GetFarmersQuery{}
+	if err := validation.BindAndValidate(c, query); err != nil {
+		return err
+	}
+
+	zoneName := getZoneName(c)
+	result, err := h.farmerService.GetFarmers(c, zoneName, query)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, result)
 }
 
 func (h *FarmerHandler) UpdateFarmer(c echo.Context) error {
