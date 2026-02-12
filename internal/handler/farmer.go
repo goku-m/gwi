@@ -85,6 +85,7 @@ func (h *FarmerHandler) GetFarmerByID(c echo.Context) error {
 	)(c)
 }
 
+
 func (h *FarmerHandler) GetFarmers(c echo.Context) error {
 	query := &farmer.GetFarmersQuery{}
 	if err := validation.BindAndValidate(c, query); err != nil {
@@ -93,6 +94,20 @@ func (h *FarmerHandler) GetFarmers(c echo.Context) error {
 
 	zoneName := getZoneName(c)
 	result, err := h.farmerService.GetFarmers(c, zoneName, query)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+
+func (h *FarmerHandler) GetEditStatus(c echo.Context) error {
+	query := &farmer.GetEditQuery{}
+	
+
+	zoneName := getZoneName(c)
+	result, err := h.farmerService.GetEditStatus(c, zoneName, query)
 	if err != nil {
 		return err
 	}

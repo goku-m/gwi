@@ -84,6 +84,18 @@ func (s *FarmerService) GetFarmers(ctx echo.Context, zoneName string, query *far
 	return result, nil
 }
 
+
+func (s *FarmerService) GetEditStatus(ctx echo.Context, zoneName string, query *farmer.GetEditQuery) (*farmer.EditStatus, error) {
+	logger := middleware.GetLogger(ctx)
+
+	result, err := s.farmerRepo.GetEditStatus(ctx.Request().Context(), zoneName, query)
+	if err != nil {
+		logger.Error().Err(err).Str("zone", zoneName).Msg("failed to fetch edit status")
+		return nil, err
+	}
+
+	return result, nil
+}
 // ------------------------------------------------------------
 // Update (zone scoped)
 // ------------------------------------------------------------

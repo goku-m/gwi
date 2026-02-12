@@ -87,6 +87,10 @@ type GetFarmersQuery struct {
 	HasDebt   *bool   `query:"hasDebt"`                               // true => balance > 0
 }
 
+type GetEditQuery struct {
+	ShouldEdit   *bool   `query:"shouldEdit"`                               // true => balance > 0
+}
+
 func (q *GetFarmersQuery) Validate() error {
 	validate := validator.New()
 

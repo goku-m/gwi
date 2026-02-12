@@ -403,6 +403,34 @@ func (r *FarmerRepository) GetZoneStats(ctx context.Context, zoneName string) (*
 	return &stats, nil
 }
 
+func (r *FarmerRepository) GetEditStatus(
+	ctx context.Context,
+	zoneName string,
+	query *farmer.GetEditQuery,
+) (*farmer.EditStatus, error) {
+	_ = zoneName
+	_ = query
+
+	stmt := `
+		SELECT should_edit
+		FROM edit_status
+		ORDER BY updated_at DESC
+		LIMIT 1
+	`
+
+	var status farmer.EditStatus
+	if err := r.server.DB.Pool.QueryRow(ctx, stmt).Scan(&status.ShouldEdit); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Safe default when no status row exists yet.
+			status.ShouldEdit = true
+			return &status, nil
+		}
+		return nil, fmt.Errorf("get edit status failed: %w", err)
+	}
+
+	return &status, nil
+}
+
 type SyncFarmerRow struct {
 	ID            string
 	ZoneName      string
@@ -704,3 +732,5 @@ func farmerSyncFromRow(row SyncFarmerRow) farmer.FarmerSyncRecord {
 		DeletedAt:      deletedAt,
 	}
 }
+
+

@@ -40,6 +40,14 @@ type PopulatedFarmer struct {
 	// Zone       *Zone      `json:"zone"`
 }
 
+
+type EditStatus struct {
+	ShouldEdit bool `json:"shouldEdit" db:"should_edit"`
+	// Add related data later:
+	// Deliveries []Delivery `json:"deliveries"`
+	// Zone       *Zone      `json:"zone"`
+}
+
 // --------------------------------------------------
 // Aggregates / Stats
 // --------------------------------------------------
