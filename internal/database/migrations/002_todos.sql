@@ -33,9 +33,7 @@ CHECK (
     zone_name IN (
         'WA',
         'YENDI',
-        'GARU',
-        'NAPKADURI',
-        'LANGBINSI'
+        
     )
 );
 
