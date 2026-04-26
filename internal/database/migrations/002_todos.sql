@@ -32,7 +32,10 @@ ADD CONSTRAINT farmers_zone_name_check
 CHECK (
     zone_name IN (
         'WA',
-        'YENDI'
+        'YENDI',
+        'GARU',
+        'NAPKADURI',
+        'LANGBINSI'
     )
 );
 

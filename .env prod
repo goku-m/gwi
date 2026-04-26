@@ -1,0 +1,54 @@
+GWI_PRIMARY.ENV="production"
+
+GWI_SERVER.PORT="8080"
+GWI_SERVER.READ_TIMEOUT="30"
+GWI_SERVER.WRITE_TIMEOUT="30"
+GWI_SERVER.IDLE_TIMEOUT="60"
+GWI_SERVER.CORS_ALLOWED_ORIGINS="*"
+
+GWI_DATABASE.HOST="shortline.proxy.rlwy.net"
+GWI_DATABASE.PORT="30973"
+GWI_DATABASE.USER="postgres"
+GWI_DATABASE.PASSWORD="VeiwQPDEqzfaWgaIofXcigTHQEMPBpEg"
+GWI_DATABASE.NAME="railway"
+GWI_DATABASE.SSL_MODE="disable"
+GWI_DATABASE.MAX_OPEN_CONNS="25"
+GWI_DATABASE.MAX_IDLE_CONNS="25"
+GWI_DATABASE.CONN_MAX_LIFETIME="300"
+GWI_DATABASE.CONN_MAX_IDLE_TIME="300"
+
+GWI_DSN = postgresql://postgres:VeiwQPDEqzfaWgaIofXcigTHQEMPBpEg@shortline.proxy.rlwy.net:30973/railway
+
+
+GWI_AUTH.SECRET_KEY=""
+
+GWI_INTEGRATION.RESEND_API_KEY=""
+
+
+# ============================================================================
+# OBSERVABILITY CONFIGURATION
+# ============================================================================
+
+# Service Identity
+GWI_OBSERVABILITY.SERVICE_NAME="GWI"
+GWI_OBSERVABILITY.ENVIRONMENT="development"
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+
+# Basic Logging Settings
+GWI_OBSERVABILITY.LOGGING.LEVEL="debug"
+GWI_OBSERVABILITY.LOGGING.FORMAT="console"
+
+# ============================================================================
+# NEW RELIC CONFIGURATION
+# ============================================================================
+
+
+
+# Health Check Settings
+GWI_OBSERVABILITY.HEALTH_CHECKS.ENABLED="true"
+GWI_OBSERVABILITY.HEALTH_CHECKS.INTERVAL="30s"
+GWI_OBSERVABILITY.HEALTH_CHECKS.TIMEOUT="5s"
+GWI_OBSERVABILITY.HEALTH_CHECKS.CHECKS="database"
