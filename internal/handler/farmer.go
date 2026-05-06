@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goku-m/gwi/internal/model/farmer"
 	"github.com/goku-m/gwi/internal/server"
@@ -30,6 +31,42 @@ func NewFarmerHandler(s *server.Server, farmerService *service.FarmerService) *F
 
 func getZoneName(c echo.Context) string {
 	return strings.TrimSpace(c.Param("zoneName"))
+}
+
+func getCommunityName(c echo.Context) string {
+	return strings.TrimSpace(c.Param("communityName"))
+}
+
+func parseStatsDateRange(c echo.Context) (*time.Time, *time.Time, error) {
+	const layout = "2006-01-02"
+
+	fromRaw := strings.TrimSpace(c.QueryParam("from"))
+	toRaw := strings.TrimSpace(c.QueryParam("to"))
+
+	var fromDate *time.Time
+	var toDate *time.Time
+
+	if fromRaw != "" {
+		parsed, err := time.Parse(layout, fromRaw)
+		if err != nil {
+			return nil, nil, echo.NewHTTPError(http.StatusBadRequest, "invalid from date, use YYYY-MM-DD")
+		}
+		fromDate = &parsed
+	}
+
+	if toRaw != "" {
+		parsed, err := time.Parse(layout, toRaw)
+		if err != nil {
+			return nil, nil, echo.NewHTTPError(http.StatusBadRequest, "invalid to date, use YYYY-MM-DD")
+		}
+		toDate = &parsed
+	}
+
+	if fromDate != nil && toDate != nil && fromDate.After(*toDate) {
+		return nil, nil, echo.NewHTTPError(http.StatusBadRequest, "from date cannot be after to date")
+	}
+
+	return fromDate, toDate, nil
 }
 
 // func parseFloatPtr(v string) (*float64, error) {
@@ -85,7 +122,6 @@ func (h *FarmerHandler) GetFarmerByID(c echo.Context) error {
 	)(c)
 }
 
-
 func (h *FarmerHandler) GetFarmers(c echo.Context) error {
 	query := &farmer.GetFarmersQuery{}
 	if err := validation.BindAndValidate(c, query); err != nil {
@@ -101,10 +137,8 @@ func (h *FarmerHandler) GetFarmers(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
-
 func (h *FarmerHandler) GetEditStatus(c echo.Context) error {
 	query := &farmer.GetEditQuery{}
-	
 
 	zoneName := getZoneName(c)
 	result, err := h.farmerService.GetEditStatus(c, zoneName, query)
@@ -146,7 +180,12 @@ func (h *FarmerHandler) GetZoneStats(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "zoneName is required")
 	}
 
-	stats, err := h.farmerService.GetZoneStats(c, zoneName)
+	fromDate, toDate, dateErr := parseStatsDateRange(c)
+	if dateErr != nil {
+		return dateErr
+	}
+
+	stats, err := h.farmerService.GetZoneStats(c, zoneName, fromDate, toDate)
 	if err != nil {
 		return err
 	}
@@ -154,6 +193,57 @@ func (h *FarmerHandler) GetZoneStats(c echo.Context) error {
 	return c.JSON(http.StatusOK, stats)
 }
 
+func (h *FarmerHandler) GetGeneralStats(c echo.Context) error {
+	fromDate, toDate, dateErr := parseStatsDateRange(c)
+	if dateErr != nil {
+		return dateErr
+	}
+
+	stats, err := h.farmerService.GetGeneralStats(c, fromDate, toDate)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, stats)
+}
+
+func (h *FarmerHandler) GetCommunityStats(c echo.Context) error {
+	zoneName := getZoneName(c)
+	if zoneName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "zoneName is required")
+	}
+
+	communityName := getCommunityName(c)
+	if communityName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "communityName is required")
+	}
+
+	fromDate, toDate, dateErr := parseStatsDateRange(c)
+	if dateErr != nil {
+		return dateErr
+	}
+
+	stats, err := h.farmerService.GetCommunityStats(c, zoneName, communityName, fromDate, toDate)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, stats)
+}
+
+func (h *FarmerHandler) GetZoneCommunities(c echo.Context) error {
+	zoneName := getZoneName(c)
+	if zoneName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "zoneName is required")
+	}
+
+	result, err := h.farmerService.GetZoneCommunities(c, zoneName)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
 
 type PullResponse struct {
 	Changes map[string]any `json:"changes"`

@@ -17,10 +17,10 @@ type CreateFarmerPayload struct {
 	Community  string `json:"community" validate:"required,min=1,max=255"`
 
 	// Optional on create (default 0 in DB); allow if you want to set from app.
-	Prefinance      *float64 `json:"prefinance" validate:"omitempty,gte=0"`
-	Balance         *float64 `json:"balance" validate:"omitempty,gte=0"`
-	TotalKgBrought  *float64 `json:"totalKgBrought" validate:"omitempty,gte=0"`
-	TotalAmount     *float64 `json:"totalAmount" validate:"omitempty,gte=0"`
+	Prefinance     *float64 `json:"prefinance" validate:"omitempty,gte=0"`
+	Balance        *float64 `json:"balance" validate:"omitempty,gte=0"`
+	TotalKgBrought *float64 `json:"totalKgBrought" validate:"omitempty,gte=0"`
+	TotalAmount    *float64 `json:"totalAmount" validate:"omitempty,gte=0"`
 }
 
 func (p *CreateFarmerPayload) Validate() error {
@@ -75,8 +75,8 @@ func (p *UpdateFarmerPayload) Validate() error {
 // ------------------------------------------------------------
 
 type GetFarmersQuery struct {
-	Page  *int    `query:"page" validate:"omitempty,min=1"`
-	Limit *int    `query:"limit" validate:"omitempty,min=1,max=100"`
+	Page  *int `query:"page" validate:"omitempty,min=1"`
+	Limit *int `query:"limit" validate:"omitempty,min=1,max=100"`
 
 	// Sorting allowed fields based on your farmers table
 	Sort  *string `query:"sort" validate:"omitempty,oneof=created_at updated_at name community national_id balance total_kg_brought total_amount"`
@@ -84,11 +84,11 @@ type GetFarmersQuery struct {
 
 	Search    *string `query:"search" validate:"omitempty,min=1"`    // match name/national_id
 	Community *string `query:"community" validate:"omitempty,min=1"` // filter by community
-	HasDebt   *bool   `query:"hasDebt"`                               // true => balance > 0
+	HasDebt   *bool   `query:"hasDebt"`                              // true => balance > 0
 }
 
 type GetEditQuery struct {
-	ShouldEdit   *bool   `query:"shouldEdit"`                               // true => balance > 0
+	ShouldEdit *bool `query:"shouldEdit"` // true => balance > 0
 }
 
 func (q *GetFarmersQuery) Validate() error {
@@ -155,11 +155,6 @@ func (p *DeleteFarmerPayload) Validate() error {
 	return validate.Struct(p)
 }
 
-
-
-
-
-
 type PullChangesResponse struct {
 	Changes   map[string]any `json:"changes"`
 	Timestamp int64          `json:"timestamp"`
@@ -171,7 +166,6 @@ type PushChangesRequest struct {
 	ChunkIndex   *int                                      `json:"chunkIndex,omitempty"`
 	ChunkCount   *int                                      `json:"chunkCount,omitempty"`
 }
-
 
 type FarmerSyncRecord struct {
 	ID string `json:"id"`

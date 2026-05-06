@@ -169,7 +169,7 @@ func (r *FarmerRepository) GetFarmers(
 		}
 
 		if query.Community != nil && strings.TrimSpace(*query.Community) != "" {
-			conditions = append(conditions, "t.community ILIKE @community")
+			conditions = append(conditions, "LOWER(BTRIM(t.community)) = LOWER(BTRIM(@community))")
 			args["community"] = strings.TrimSpace(*query.Community)
 		}
 
@@ -372,24 +372,33 @@ func (r *FarmerRepository) DeleteFarmer(ctx context.Context, zoneName string, fa
 // total farmers, total kgs, total amount, total prefinance
 // ------------------------------------------------------------
 
-func (r *FarmerRepository) GetZoneStats(ctx context.Context, zoneName string) (*farmer.FarmerStats, error) {
+func (r *FarmerRepository) GetZoneStats(ctx context.Context, zoneName string, fromDate, toDate *time.Time) (*farmer.FarmerStats, error) {
 	stmt := `
 		SELECT
 			@zone_name::text AS zone_name,
 			COUNT(*) AS total_farmers,
-			COALESCE(SUM(total_kg_brought), 0)::float8 AS total_kg_brought,
-			COALESCE(SUM(total_amount), 0)::float8 AS total_amount,
-			COALESCE(SUM(prefinance), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(balance), 0)::float8 AS total_balance
+			COUNT(DISTINCT NULLIF(BTRIM(community), '')) AS total_communities,
+			COALESCE((
+				SELECT zds.sync_count
+				FROM zone_daily_syncs zds
+				WHERE LOWER(BTRIM(zds.zone_name)) = LOWER(BTRIM(@zone_name))
+				  AND zds.sync_date = CURRENT_DATE
+			), 0)::int AS daily_syncs,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
 		FROM
 			farmers
 		WHERE
-			zone_name = @zone_name
+			LOWER(BTRIM(zone_name)) = LOWER(BTRIM(@zone_name))
 			AND deleted_at IS NULL
 	`
 
 	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
 		"zone_name": zoneName,
+		"from_date": fromDate,
+		"to_date":   toDate,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("get zone stats failed zone=%s: %w", zoneName, err)
@@ -401,6 +410,138 @@ func (r *FarmerRepository) GetZoneStats(ctx context.Context, zoneName string) (*
 	}
 
 	return &stats, nil
+}
+
+func (r *FarmerRepository) GetGeneralStats(ctx context.Context, fromDate, toDate *time.Time) (*farmer.FarmerStats, error) {
+	stmt := `
+		SELECT
+			'General'::text AS zone_name,
+			COUNT(*) AS total_farmers,
+			COUNT(DISTINCT NULLIF(BTRIM(community), '')) AS total_communities,
+			COALESCE((
+				SELECT SUM(zds.sync_count)
+				FROM zone_daily_syncs zds
+				WHERE zds.sync_date = CURRENT_DATE
+			), 0)::int AS daily_syncs,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+		FROM
+			farmers
+		WHERE
+			deleted_at IS NULL
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"from_date": fromDate,
+		"to_date":   toDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get general stats failed: %w", err)
+	}
+
+	stats, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[farmer.FarmerStats])
+	if err != nil {
+		return nil, fmt.Errorf("collect general stats failed: %w", err)
+	}
+
+	return &stats, nil
+}
+
+func (r *FarmerRepository) GetCommunityStats(ctx context.Context, zoneName, communityName string, fromDate, toDate *time.Time) (*farmer.CommunityFarmerStats, error) {
+	stmt := `
+		SELECT
+			@zone_name::text AS zone_name,
+			@community_name::text AS community_name,
+			COUNT(*) AS total_farmers,
+			COALESCE((
+				SELECT zds.sync_count
+				FROM zone_daily_syncs zds
+				WHERE LOWER(BTRIM(zds.zone_name)) = LOWER(BTRIM(@zone_name))
+				  AND zds.sync_date = CURRENT_DATE
+			), 0)::int AS daily_syncs,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+		FROM
+			farmers
+		WHERE
+			LOWER(BTRIM(zone_name)) = LOWER(BTRIM(@zone_name))
+			AND LOWER(BTRIM(community)) = LOWER(BTRIM(@community_name))
+			AND deleted_at IS NULL
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"zone_name":      zoneName,
+		"community_name": communityName,
+		"from_date":      fromDate,
+		"to_date":        toDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get community stats failed zone=%s community=%s: %w", zoneName, communityName, err)
+	}
+
+	stats, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[farmer.CommunityFarmerStats])
+	if err != nil {
+		return nil, fmt.Errorf("collect community stats failed zone=%s community=%s: %w", zoneName, communityName, err)
+	}
+
+	return &stats, nil
+}
+
+func (r *FarmerRepository) IncrementDailySync(ctx context.Context, zoneName string) error {
+	stmt := `
+		INSERT INTO zone_daily_syncs (zone_name, sync_date, sync_count, created_at, updated_at)
+		VALUES (@zone_name, CURRENT_DATE, 1, NOW(), NOW())
+		ON CONFLICT (zone_name, sync_date)
+		DO UPDATE SET
+			sync_count = zone_daily_syncs.sync_count + 1,
+			updated_at = NOW()
+	`
+
+	_, err := r.server.DB.Pool.Exec(ctx, stmt, pgx.NamedArgs{
+		"zone_name": strings.TrimSpace(zoneName),
+	})
+	if err != nil {
+		return fmt.Errorf("increment daily sync failed zone=%s: %w", zoneName, err)
+	}
+
+	return nil
+}
+
+func (r *FarmerRepository) GetZoneCommunities(ctx context.Context, zoneName string) ([]string, error) {
+	stmt := `
+		SELECT DISTINCT BTRIM(community) AS community_name
+		FROM farmers
+		WHERE LOWER(BTRIM(zone_name)) = LOWER(BTRIM(@zone_name))
+		  AND deleted_at IS NULL
+		  AND BTRIM(community) <> ''
+		ORDER BY community_name ASC
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"zone_name": zoneName,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get zone communities failed zone=%s: %w", zoneName, err)
+	}
+	defer rows.Close()
+
+	communities := make([]string, 0)
+	for rows.Next() {
+		var community string
+		if err := rows.Scan(&community); err != nil {
+			return nil, fmt.Errorf("scan zone community failed zone=%s: %w", zoneName, err)
+		}
+		communities = append(communities, community)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate zone communities failed zone=%s: %w", zoneName, err)
+	}
+
+	return communities, nil
 }
 
 func (r *FarmerRepository) GetEditStatus(
@@ -732,5 +873,3 @@ func farmerSyncFromRow(row SyncFarmerRow) farmer.FarmerSyncRecord {
 		DeletedAt:      deletedAt,
 	}
 }
-
-

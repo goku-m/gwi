@@ -7,11 +7,14 @@ import (
 )
 
 func registerFarmerRoutes(r *echo.Group, h *handler.FarmerHandler, auth *middleware.AuthMiddleware) {
+	// General stats across all zones
+	r.GET("/farmers/stats", h.GetGeneralStats)
+
 	// ------------------------------------------------------------
 	// Zone-scoped routes
 	// Base: /zones/:zoneName
 	// ------------------------------------------------------------
-	zones := r.Group("/zones/:zoneName")
+	zones := r.Group("/zone/:zoneName")
 
 	// ------------------------------------------------------------
 	// Farmer operations (per zone)
@@ -27,10 +30,14 @@ func registerFarmerRoutes(r *echo.Group, h *handler.FarmerHandler, auth *middlew
 	// Stats (NEW)
 	farmers.GET("/stats", h.GetZoneStats)
 
+	// Community stats
+	r.GET("/zone/:zoneName/:communityName/farmers/stats", h.GetCommunityStats)
+	r.GET("/zone/:zoneName/communities", h.GetZoneCommunities)
+
 	sync := zones.Group("/sync")
 
-sync.GET("/pull", h.Pull)
-sync.POST("/push", h.Push)
+	sync.GET("/pull", h.Pull)
+	sync.POST("/push", h.Push)
 
 	// ------------------------------------------------------------
 	// Individual farmer operations

@@ -56,6 +56,9 @@ func NewRouter(s *server.Server, h *handler.Handlers) *echo.Echo {
 	// register system routes
 	registerSystemRoutes(router, h)
 
+	// register page routes (non-API)
+	registerPageRoutes(router, h)
+
 	// register api routes
 	r := router.Group("/api")
 	registerFarmerRoutes(r, h.Farmer, middlewares.Auth)

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -84,7 +85,6 @@ func (s *FarmerService) GetFarmers(ctx echo.Context, zoneName string, query *far
 	return result, nil
 }
 
-
 func (s *FarmerService) GetEditStatus(ctx echo.Context, zoneName string, query *farmer.GetEditQuery) (*farmer.EditStatus, error) {
 	logger := middleware.GetLogger(ctx)
 
@@ -96,6 +96,7 @@ func (s *FarmerService) GetEditStatus(ctx echo.Context, zoneName string, query *
 
 	return result, nil
 }
+
 // ------------------------------------------------------------
 // Update (zone scoped)
 // ------------------------------------------------------------
@@ -152,10 +153,10 @@ func (s *FarmerService) DeleteFarmer(ctx echo.Context, zoneName string, farmerID
 // total farmers, total kgs, total amount, total prefinance
 // ------------------------------------------------------------
 
-func (s *FarmerService) GetZoneStats(ctx echo.Context, zoneName string) (*farmer.FarmerStats, error) {
+func (s *FarmerService) GetZoneStats(ctx echo.Context, zoneName string, fromDate, toDate *time.Time) (*farmer.FarmerStats, error) {
 	logger := middleware.GetLogger(ctx)
 
-	stats, err := s.farmerRepo.GetZoneStats(ctx.Request().Context(), zoneName)
+	stats, err := s.farmerRepo.GetZoneStats(ctx.Request().Context(), zoneName, fromDate, toDate)
 	if err != nil {
 		logger.Error().Err(err).Str("zone", zoneName).Msg("failed to fetch zone farmer statistics")
 		return nil, err
@@ -164,10 +165,59 @@ func (s *FarmerService) GetZoneStats(ctx echo.Context, zoneName string) (*farmer
 	return stats, nil
 }
 
+func (s *FarmerService) GetGeneralStats(ctx echo.Context, fromDate, toDate *time.Time) (*farmer.FarmerStats, error) {
+	logger := middleware.GetLogger(ctx)
+
+	stats, err := s.farmerRepo.GetGeneralStats(ctx.Request().Context(), fromDate, toDate)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to fetch general farmer statistics")
+		return nil, err
+	}
+
+	return stats, nil
+}
+
+func (s *FarmerService) GetCommunityStats(ctx echo.Context, zoneName, communityName string, fromDate, toDate *time.Time) (*farmer.CommunityFarmerStats, error) {
+	logger := middleware.GetLogger(ctx)
+
+	stats, err := s.farmerRepo.GetCommunityStats(ctx.Request().Context(), zoneName, communityName, fromDate, toDate)
+	if err != nil {
+		logger.Error().Err(err).
+			Str("zone", zoneName).
+			Str("community", communityName).
+			Msg("failed to fetch community farmer statistics")
+		return nil, err
+	}
+
+	return stats, nil
+}
+
+func (s *FarmerService) GetZoneCommunities(ctx echo.Context, zoneName string) (*farmer.ZoneCommunitiesResponse, error) {
+	logger := middleware.GetLogger(ctx)
+
+	communities, err := s.farmerRepo.GetZoneCommunities(ctx.Request().Context(), zoneName)
+	if err != nil {
+		logger.Error().Err(err).Str("zone", zoneName).Msg("failed to fetch zone communities")
+		return nil, err
+	}
+
+	return &farmer.ZoneCommunitiesResponse{
+		ZoneName:    zoneName,
+		Communities: communities,
+	}, nil
+}
+
 func (s *FarmerService) Pull(ctx context.Context, zoneName string, lastPulledAtMs int64) (*farmer.PullResult, error) {
 	created, updated, deleted, ts, err := s.farmerRepo.PullFarmers(ctx, zoneName, lastPulledAtMs)
 	if err != nil {
 		return nil, err
+	}
+
+	if incErr := s.farmerRepo.IncrementDailySync(ctx, zoneName); incErr != nil {
+		s.server.Logger.Warn().
+			Err(incErr).
+			Str("zone", zoneName).
+			Msg("failed to increment daily sync counter after pull")
 	}
 
 	return &farmer.PullResult{
@@ -180,14 +230,23 @@ func (s *FarmerService) Pull(ctx context.Context, zoneName string, lastPulledAtM
 
 func (s *FarmerService) Push(ctx context.Context, zoneName string, changes map[string]farmer.TableChanges[farmer.FarmerSyncRecord]) error {
 	farmers, ok := changes["farmers"]
-	if !ok {
-		return nil // nothing to do
+	if ok {
+		// Apply created + updated via upsert
+		upserts := make([]farmer.FarmerSyncRecord, 0, len(farmers.Created)+len(farmers.Updated))
+		upserts = append(upserts, farmers.Created...)
+		upserts = append(upserts, farmers.Updated...)
+
+		if err := s.farmerRepo.PushFarmers(ctx, zoneName, upserts, farmers.Deleted); err != nil {
+			return err
+		}
 	}
 
-	// Apply created + updated via upsert
-	upserts := make([]farmer.FarmerSyncRecord, 0, len(farmers.Created)+len(farmers.Updated))
-	upserts = append(upserts, farmers.Created...)
-	upserts = append(upserts, farmers.Updated...)
+	if incErr := s.farmerRepo.IncrementDailySync(ctx, zoneName); incErr != nil {
+		s.server.Logger.Warn().
+			Err(incErr).
+			Str("zone", zoneName).
+			Msg("failed to increment daily sync counter after push")
+	}
 
-	return s.farmerRepo.PushFarmers(ctx, zoneName, upserts, farmers.Deleted)
+	return nil
 }

@@ -13,7 +13,7 @@ import (
 type Farmer struct {
 	model.Base
 
-	ZoneName   string `json:"zoneName" db:"zone_name"`
+	ZoneName string `json:"zoneName" db:"zone_name"`
 
 	Name       string `json:"name" db:"name"`
 	NationalID string `json:"nationalId" db:"national_id"`
@@ -40,7 +40,6 @@ type PopulatedFarmer struct {
 	// Zone       *Zone      `json:"zone"`
 }
 
-
 type EditStatus struct {
 	ShouldEdit bool `json:"shouldEdit" db:"should_edit"`
 	// Add related data later:
@@ -55,11 +54,30 @@ type EditStatus struct {
 type FarmerStats struct {
 	ZoneName string `json:"zoneName" db:"zone_name"`
 
+	TotalFarmers     int     `json:"totalFarmers" db:"total_farmers"`
+	TotalCommunities int     `json:"totalCommunities" db:"total_communities"`
+	DailySyncs       int     `json:"dailySyncs" db:"daily_syncs"`
+	TotalKgBrought   float64 `json:"totalKgBrought" db:"total_kg_brought"`
+	TotalAmount      float64 `json:"totalAmount" db:"total_amount"`
+	TotalPrefinance  float64 `json:"totalPrefinance" db:"total_prefinance"`
+	TotalBalance     float64 `json:"totalBalance" db:"total_balance"` // optional but useful
+}
+
+type CommunityFarmerStats struct {
+	ZoneName      string `json:"zoneName" db:"zone_name"`
+	CommunityName string `json:"communityName" db:"community_name"`
+
 	TotalFarmers    int     `json:"totalFarmers" db:"total_farmers"`
+	DailySyncs      int     `json:"dailySyncs" db:"daily_syncs"`
 	TotalKgBrought  float64 `json:"totalKgBrought" db:"total_kg_brought"`
 	TotalAmount     float64 `json:"totalAmount" db:"total_amount"`
 	TotalPrefinance float64 `json:"totalPrefinance" db:"total_prefinance"`
-	TotalBalance    float64 `json:"totalBalance" db:"total_balance"` // optional but useful
+	TotalBalance    float64 `json:"totalBalance" db:"total_balance"`
+}
+
+type ZoneCommunitiesResponse struct {
+	ZoneName    string   `json:"zoneName"`
+	Communities []string `json:"communities"`
 }
 
 // --------------------------------------------------
