@@ -14,7 +14,7 @@ func registerFarmerRoutes(r *echo.Group, h *handler.FarmerHandler, auth *middlew
 	// Zone-scoped routes
 	// Base: /zones/:zoneName
 	// ------------------------------------------------------------
-	zones := r.Group("/zone/:zoneName")
+	zones := r.Group("/zones/:zoneName")
 
 	// ------------------------------------------------------------
 	// Farmer operations (per zone)
