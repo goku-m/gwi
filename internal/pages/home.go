@@ -377,7 +377,7 @@ func Home() templ.Component {
               <p class="header-metric-value" id="totalCommunities">0</p>
             </div>
             <div class="header-metric">
-              <span class="header-metric-label">Daily Syncs</span>
+              <span class="header-metric-label">Syncs Today</span>
               <p class="header-metric-value" id="dailySyncs">0</p>
             </div>
           </div>
