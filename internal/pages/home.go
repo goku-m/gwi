@@ -560,7 +560,7 @@ func Home() templ.Component {
         }
 
         try {
-          const response = await fetch("/api/zone/" + encodeURIComponent(zone) + "/communities");
+          const response = await fetch("/api/zones/" + encodeURIComponent(zone) + "/communities");
           if (!response.ok) {
             throw new Error("Request failed with status " + response.status);
           }
@@ -623,7 +623,7 @@ func Home() templ.Component {
 
         const route = zone === "General"
           ? "/api/farmers/stats" + dateQuery
-          : "/api/zone/" + encodeURIComponent(zone) + "/farmers/stats" + dateQuery;
+          : "/api/zones/" + encodeURIComponent(zone) + "/farmers/stats" + dateQuery;
 
         try {
           const data = await fetchStats(route);
@@ -651,7 +651,7 @@ func Home() templ.Component {
 
         try {
           const data = await fetchStats(
-            "/api/zone/" + encodeURIComponent(zone) + "/" + encodeURIComponent(community) + "/farmers/stats" + dateQuery
+            "/api/zones/" + encodeURIComponent(zone) + "/" + encodeURIComponent(community) + "/farmers/stats" + dateQuery
           );
           setStats(data);
         } catch (err) {

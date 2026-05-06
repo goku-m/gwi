@@ -31,8 +31,8 @@ func registerFarmerRoutes(r *echo.Group, h *handler.FarmerHandler, auth *middlew
 	farmers.GET("/stats", h.GetZoneStats)
 
 	// Community stats
-	r.GET("/zone/:zoneName/:communityName/farmers/stats", h.GetCommunityStats)
-	r.GET("/zone/:zoneName/communities", h.GetZoneCommunities)
+	r.GET("/zones/:zoneName/:communityName/farmers/stats", h.GetCommunityStats)
+	r.GET("/zones/:zoneName/communities", h.GetZoneCommunities)
 
 	sync := zones.Group("/sync")
 
