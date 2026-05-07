@@ -565,7 +565,9 @@ func Home() templ.Component {
             throw new Error("Request failed with status " + response.status);
           }
           const payload = await response.json();
-          const communities = Array.isArray(payload.communities) ? payload.communities : [];
+          const communities = (Array.isArray(payload.communities) ? payload.communities : []).filter(function (community) {
+            return (community || "").trim().length >= 3;
+          });
           communitiesByZone[zone] = communities;
           renderCommunityOptions(communities);
         } catch (err) {
