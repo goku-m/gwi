@@ -275,6 +275,12 @@ func Home() templ.Component {
       letter-spacing: 0.02em;
       color: var(--muted);
     }
+    .chart-meta {
+      margin: -2px 0 10px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #0a5d56;
+    }
     .loading .card-value {
       color: #8ca2ad;
     }
@@ -412,6 +418,7 @@ func Home() templ.Component {
       <section class="charts">
         <article class="chart-card">
           <p class="chart-title">Recovery Rate</p>
+          <p class="chart-meta" id="recoveryRateText">Recovery: 0%</p>
           <div id="recoveryChart"></div>
         </article>
         <article class="chart-card">
@@ -444,6 +451,7 @@ func Home() templ.Component {
       const totalAmount = document.getElementById("totalAmount");
       const totalPrefinance = document.getElementById("totalPrefinance");
       const totalBalance = document.getElementById("totalBalance");
+      const recoveryRateText = document.getElementById("recoveryRateText");
       let selectedZone = "General";
       const communitiesByZone = {};
       let recoveryChart = null;
@@ -485,6 +493,8 @@ func Home() templ.Component {
 
         const unpaidPrefinance = Math.max(0, Math.min(balance, prefinance));
         const recoveredPrefinance = Math.max(0, prefinance - unpaidPrefinance);
+        const recoveryPercent = prefinance > 0 ? (recoveredPrefinance / prefinance) * 100 : 0;
+        recoveryRateText.textContent = "Recovery: " + recoveryPercent.toFixed(1) + "%";
 
         const recoveryOptions = {
           chart: { type: "pie", height: 280 },
