@@ -213,11 +213,13 @@ func (s *FarmerService) Pull(ctx context.Context, zoneName string, lastPulledAtM
 		return nil, err
 	}
 
-	if incErr := s.farmerRepo.IncrementDailySync(ctx, zoneName); incErr != nil {
-		s.server.Logger.Warn().
-			Err(incErr).
-			Str("zone", zoneName).
-			Msg("failed to increment daily sync counter after pull")
+	if len(created)+len(updated)+len(deleted) > 0 {
+		if incErr := s.farmerRepo.IncrementDailySync(ctx, zoneName); incErr != nil {
+			s.server.Logger.Warn().
+				Err(incErr).
+				Str("zone", zoneName).
+				Msg("failed to increment daily sync counter after pull")
+		}
 	}
 
 	return &farmer.PullResult{
@@ -229,23 +231,28 @@ func (s *FarmerService) Pull(ctx context.Context, zoneName string, lastPulledAtM
 }
 
 func (s *FarmerService) Push(ctx context.Context, zoneName string, changes map[string]farmer.TableChanges[farmer.FarmerSyncRecord]) error {
+	manipulated := false
+
 	farmers, ok := changes["farmers"]
 	if ok {
 		// Apply created + updated via upsert
 		upserts := make([]farmer.FarmerSyncRecord, 0, len(farmers.Created)+len(farmers.Updated))
 		upserts = append(upserts, farmers.Created...)
 		upserts = append(upserts, farmers.Updated...)
+		manipulated = len(upserts)+len(farmers.Deleted) > 0
 
 		if err := s.farmerRepo.PushFarmers(ctx, zoneName, upserts, farmers.Deleted); err != nil {
 			return err
 		}
 	}
 
-	if incErr := s.farmerRepo.IncrementDailySync(ctx, zoneName); incErr != nil {
-		s.server.Logger.Warn().
-			Err(incErr).
-			Str("zone", zoneName).
-			Msg("failed to increment daily sync counter after push")
+	if manipulated {
+		if incErr := s.farmerRepo.IncrementDailySync(ctx, zoneName); incErr != nil {
+			s.server.Logger.Warn().
+				Err(incErr).
+				Str("zone", zoneName).
+				Msg("failed to increment daily sync counter after push")
+		}
 	}
 
 	return nil
