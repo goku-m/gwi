@@ -80,6 +80,11 @@ type ZoneCommunitiesResponse struct {
 	Communities []string `json:"communities"`
 }
 
+type NewFarmersStats struct {
+	NewFarmers int    `json:"newFarmers" db:"new_farmers"`
+	SinceDate  string `json:"sinceDate" db:"since_date"`
+}
+
 // --------------------------------------------------
 // Helper methods
 // --------------------------------------------------

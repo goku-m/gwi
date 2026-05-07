@@ -207,6 +207,49 @@ func (s *FarmerService) GetZoneCommunities(ctx echo.Context, zoneName string) (*
 	}, nil
 }
 
+func (s *FarmerService) GetGeneralNewFarmersCount(ctx echo.Context, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
+	logger := middleware.GetLogger(ctx)
+
+	stats, err := s.farmerRepo.GetGeneralNewFarmersCount(ctx.Request().Context(), sinceDate)
+	if err != nil {
+		logger.Error().Err(err).Str("since_date", sinceDate.Format("2006-01-02")).Msg("failed to fetch general new farmers count")
+		return nil, err
+	}
+
+	return stats, nil
+}
+
+func (s *FarmerService) GetZoneNewFarmersCount(ctx echo.Context, zoneName string, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
+	logger := middleware.GetLogger(ctx)
+
+	stats, err := s.farmerRepo.GetZoneNewFarmersCount(ctx.Request().Context(), zoneName, sinceDate)
+	if err != nil {
+		logger.Error().Err(err).
+			Str("zone", zoneName).
+			Str("since_date", sinceDate.Format("2006-01-02")).
+			Msg("failed to fetch zone new farmers count")
+		return nil, err
+	}
+
+	return stats, nil
+}
+
+func (s *FarmerService) GetCommunityNewFarmersCount(ctx echo.Context, zoneName, communityName string, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
+	logger := middleware.GetLogger(ctx)
+
+	stats, err := s.farmerRepo.GetCommunityNewFarmersCount(ctx.Request().Context(), zoneName, communityName, sinceDate)
+	if err != nil {
+		logger.Error().Err(err).
+			Str("zone", zoneName).
+			Str("community", communityName).
+			Str("since_date", sinceDate.Format("2006-01-02")).
+			Msg("failed to fetch community new farmers count")
+		return nil, err
+	}
+
+	return stats, nil
+}
+
 func (s *FarmerService) Pull(ctx context.Context, zoneName string, lastPulledAtMs int64) (*farmer.PullResult, error) {
 	created, updated, deleted, ts, err := s.farmerRepo.PullFarmers(ctx, zoneName, lastPulledAtMs)
 	if err != nil {

@@ -544,6 +544,87 @@ func (r *FarmerRepository) GetZoneCommunities(ctx context.Context, zoneName stri
 	return communities, nil
 }
 
+func (r *FarmerRepository) GetGeneralNewFarmersCount(ctx context.Context, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
+	stmt := `
+		SELECT
+			COUNT(*)::int AS new_farmers,
+			@since_date::date::text AS since_date
+		FROM farmers
+		WHERE created_at::date >= @since_date::date
+		  AND deleted_at IS NULL
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"since_date": sinceDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get general new farmers failed since=%s: %w", sinceDate.Format("2006-01-02"), err)
+	}
+
+	stats, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[farmer.NewFarmersStats])
+	if err != nil {
+		return nil, fmt.Errorf("collect general new farmers failed since=%s: %w", sinceDate.Format("2006-01-02"), err)
+	}
+
+	return &stats, nil
+}
+
+func (r *FarmerRepository) GetZoneNewFarmersCount(ctx context.Context, zoneName string, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
+	stmt := `
+		SELECT
+			COUNT(*)::int AS new_farmers,
+			@since_date::date::text AS since_date
+		FROM farmers
+		WHERE LOWER(BTRIM(zone_name)) = LOWER(BTRIM(@zone_name))
+		  AND created_at::date >= @since_date::date
+		  AND deleted_at IS NULL
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"zone_name":  zoneName,
+		"since_date": sinceDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get zone new farmers failed zone=%s since=%s: %w", zoneName, sinceDate.Format("2006-01-02"), err)
+	}
+
+	stats, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[farmer.NewFarmersStats])
+	if err != nil {
+		return nil, fmt.Errorf("collect zone new farmers failed zone=%s since=%s: %w", zoneName, sinceDate.Format("2006-01-02"), err)
+	}
+
+	return &stats, nil
+}
+
+func (r *FarmerRepository) GetCommunityNewFarmersCount(ctx context.Context, zoneName, communityName string, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
+	stmt := `
+		SELECT
+			COUNT(*)::int AS new_farmers,
+			@since_date::date::text AS since_date
+		FROM farmers
+		WHERE LOWER(BTRIM(zone_name)) = LOWER(BTRIM(@zone_name))
+		  AND LOWER(BTRIM(community)) = LOWER(BTRIM(@community_name))
+		  AND created_at::date >= @since_date::date
+		  AND deleted_at IS NULL
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"zone_name":      zoneName,
+		"community_name": communityName,
+		"since_date":     sinceDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get community new farmers failed zone=%s community=%s since=%s: %w", zoneName, communityName, sinceDate.Format("2006-01-02"), err)
+	}
+
+	stats, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[farmer.NewFarmersStats])
+	if err != nil {
+		return nil, fmt.Errorf("collect community new farmers failed zone=%s community=%s since=%s: %w", zoneName, communityName, sinceDate.Format("2006-01-02"), err)
+	}
+
+	return &stats, nil
+}
+
 func (r *FarmerRepository) GetEditStatus(
 	ctx context.Context,
 	zoneName string,

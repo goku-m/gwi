@@ -18,6 +18,8 @@ type FarmerHandler struct {
 	farmerService *service.FarmerService
 }
 
+var newFarmersStartDate = time.Date(2026, time.May, 6, 0, 0, 0, 0, time.UTC)
+
 func NewFarmerHandler(s *server.Server, farmerService *service.FarmerService) *FarmerHandler {
 	return &FarmerHandler{
 		Handler:       NewHandler(s),
@@ -243,6 +245,48 @@ func (h *FarmerHandler) GetZoneCommunities(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, result)
+}
+
+func (h *FarmerHandler) GetGeneralNewFarmers(c echo.Context) error {
+	stats, err := h.farmerService.GetGeneralNewFarmersCount(c, newFarmersStartDate)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, stats)
+}
+
+func (h *FarmerHandler) GetZoneNewFarmers(c echo.Context) error {
+	zoneName := getZoneName(c)
+	if zoneName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "zoneName is required")
+	}
+
+	stats, err := h.farmerService.GetZoneNewFarmersCount(c, zoneName, newFarmersStartDate)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, stats)
+}
+
+func (h *FarmerHandler) GetCommunityNewFarmers(c echo.Context) error {
+	zoneName := getZoneName(c)
+	if zoneName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "zoneName is required")
+	}
+
+	communityName := getCommunityName(c)
+	if communityName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "communityName is required")
+	}
+
+	stats, err := h.farmerService.GetCommunityNewFarmersCount(c, zoneName, communityName, newFarmersStartDate)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, stats)
 }
 
 type PullResponse struct {

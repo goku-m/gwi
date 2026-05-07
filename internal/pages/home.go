@@ -168,6 +168,11 @@ func Home() templ.Component {
       font-weight: 800;
       color: #0d3a36;
     }
+    .metric-increment {
+      color: #15803d;
+      font-weight: 800;
+      margin-left: 6px;
+    }
     .community-picker {
       min-width: 220px;
       display: grid;
@@ -457,6 +462,8 @@ func Home() templ.Component {
       let recoveryChart = null;
       let financeChart = null;
       let activeStatsRequest = null;
+      let latestTotalFarmers = 0;
+      let latestNewFarmers = 0;
 
       function formatNumber(value, maxFractionDigits) {
         const n = Number(value || 0);
@@ -476,7 +483,8 @@ func Home() templ.Component {
 
       function setStats(data) {
         dashboardMain.classList.remove("loading");
-        totalFarmers.textContent = formatNumber(data.totalFarmers, 0);
+        latestTotalFarmers = Number(data.totalFarmers || 0);
+        totalFarmers.innerHTML = formatNumber(latestTotalFarmers, 0) + " <span class=\"metric-increment\">↑" + formatNumber(latestNewFarmers, 0) + "</span>";
         totalCommunities.textContent = formatNumber(data.totalCommunities, 0);
         dailySyncs.textContent = formatNumber(data.dailySyncs, 0);
         totalKgBrought.textContent = formatNumber(data.totalKgBrought, 2);
@@ -484,6 +492,12 @@ func Home() templ.Component {
         totalPrefinance.textContent = formatNumber(data.totalPrefinance, 2);
         totalBalance.textContent = formatNumber(data.totalBalance, 2);
         renderCharts(data);
+      }
+
+      function setNewFarmers(data) {
+        const count = (data && typeof data.newFarmers !== "undefined") ? data.newFarmers : 0;
+        latestNewFarmers = Number(count || 0);
+        totalFarmers.innerHTML = formatNumber(latestTotalFarmers, 0) + " <span class=\"metric-increment\">↑" + formatNumber(latestNewFarmers, 0) + "</span>";
       }
 
       function renderCharts(data) {
@@ -634,6 +648,19 @@ func Home() templ.Component {
         return response.json();
       }
 
+      async function fetchNewFarmers(route) {
+        if (!activeStatsRequest) {
+          activeStatsRequest = new AbortController();
+        }
+
+        const response = await fetch(route, { signal: activeStatsRequest.signal });
+        if (!response.ok) {
+          throw new Error("Request failed with status " + response.status);
+        }
+
+        return response.json();
+      }
+
       async function loadZoneStats(zone) {
         selectedZoneTitle.textContent = zone;
         subtitleText.textContent = "Live zone-level stats";
@@ -649,15 +676,21 @@ func Home() templ.Component {
         const route = zone === "General"
           ? "/api/farmers/stats" + dateQuery
           : "/api/zones/" + encodeURIComponent(zone) + "/farmers/stats" + dateQuery;
+        const newFarmersRoute = zone === "General"
+          ? "/api/farmers/new"
+          : "/api/zones/" + encodeURIComponent(zone) + "/farmers/new";
 
         try {
           const data = await fetchStats(route);
+          const newFarmersData = await fetchNewFarmers(newFarmersRoute);
           setStats(data);
+          setNewFarmers(newFarmersData);
         } catch (err) {
           if (err.name === "AbortError") {
             return;
           }
           setStats({});
+          setNewFarmers({});
           errorBox.textContent = "Could not load stats for " + zone + ".";
           errorBox.style.display = "block";
         }
@@ -678,12 +711,17 @@ func Home() templ.Component {
           const data = await fetchStats(
             "/api/zones/" + encodeURIComponent(zone) + "/" + encodeURIComponent(community) + "/farmers/stats" + dateQuery
           );
+          const newFarmersData = await fetchNewFarmers(
+            "/api/zones/" + encodeURIComponent(zone) + "/" + encodeURIComponent(community) + "/farmers/new"
+          );
           setStats(data);
+          setNewFarmers(newFarmersData);
         } catch (err) {
           if (err.name === "AbortError") {
             return;
           }
           setStats({});
+          setNewFarmers({});
           errorBox.textContent = "Could not load stats for " + community + ".";
           errorBox.style.display = "block";
         }
