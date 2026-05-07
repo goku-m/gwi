@@ -565,9 +565,22 @@ func Home() templ.Component {
             throw new Error("Request failed with status " + response.status);
           }
           const payload = await response.json();
-          const communities = (Array.isArray(payload.communities) ? payload.communities : []).filter(function (community) {
-            return (community || "").trim().length >= 3;
-          });
+          const seenCommunities = new Set();
+          const communities = (Array.isArray(payload.communities) ? payload.communities : []).reduce(function (acc, community) {
+            const cleanName = (community || "").trim();
+            if (cleanName.length < 3) {
+              return acc;
+            }
+
+            const dedupeKey = cleanName.toLowerCase();
+            if (seenCommunities.has(dedupeKey)) {
+              return acc;
+            }
+
+            seenCommunities.add(dedupeKey);
+            acc.push(cleanName);
+            return acc;
+          }, []);
           communitiesByZone[zone] = communities;
           renderCommunityOptions(communities);
         } catch (err) {
