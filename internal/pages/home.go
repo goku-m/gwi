@@ -414,7 +414,7 @@ func Home() templ.Component {
       <section class="cards">        <article class="card"><p class="card-label">Total Nuts (kg)</p><p class="card-value" id="totalKgBrought">0</p></article>
         <article class="card"><p class="card-label">Nuts Value (GH₵)</p><p class="card-value" id="totalAmount">0</p></article>
         <article class="card"><p class="card-label">Prefinance Given (GH₵)</p><p class="card-value" id="totalPrefinance">0</p></article>
-        <article class="card"><p class="card-label">Recovery Balance (GH₵)</p><p class="card-value" id="totalBalance">0</p></article>
+        <article class="card"><p class="card-label">Amount To Recover (GH₵)</p><p class="card-value" id="totalBalance">0</p></article>
       </section>
       <div class="loading-indicator" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>

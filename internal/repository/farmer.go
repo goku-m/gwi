@@ -384,10 +384,10 @@ func (r *FarmerRepository) GetZoneStats(ctx context.Context, zoneName string, fr
 				WHERE LOWER(BTRIM(zds.zone_name)) = LOWER(BTRIM(@zone_name))
 				  AND zds.sync_date = CURRENT_DATE
 			), 0)::int AS daily_syncs,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
 		FROM
 			farmers
 		WHERE
@@ -423,10 +423,10 @@ func (r *FarmerRepository) GetGeneralStats(ctx context.Context, fromDate, toDate
 				FROM zone_daily_syncs zds
 				WHERE zds.sync_date = CURRENT_DATE
 			), 0)::int AS daily_syncs,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
 		FROM
 			farmers
 		WHERE
@@ -461,10 +461,10 @@ func (r *FarmerRepository) GetCommunityStats(ctx context.Context, zoneName, comm
 				WHERE LOWER(BTRIM(zds.zone_name)) = LOWER(BTRIM(@zone_name))
 				  AND zds.sync_date = CURRENT_DATE
 			), 0)::int AS daily_syncs,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR created_at::date >= @from_date::date) AND (@to_date::date IS NULL OR created_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
 		FROM
 			farmers
 		WHERE
