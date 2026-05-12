@@ -24,6 +24,8 @@ type Farmer struct {
 
 	TotalKgBrought float64 `json:"totalKgBrought" db:"total_kg_brought"`
 	TotalAmount    float64 `json:"totalAmount" db:"total_amount"`
+	CreatedBy      string  `json:"createdBy" db:"created_by"`
+	UpdatedBy      string  `json:"updatedBy" db:"updated_by"`
 
 	// Soft-delete tombstone timestamp (epoch ms).
 	DeletedAt *int64 `json:"deletedAt,omitempty" db:"deleted_at"`

@@ -665,6 +665,8 @@ type SyncFarmerRow struct {
 	TotalAmount   float64
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+	CreatedBy     string
+	UpdatedBy     string
 	DeletedAtNull bool
 	DeletedAtMs   int64
 }
@@ -682,6 +684,22 @@ func msToTime(ms int64) time.Time {
 }
 func timeToMs(t time.Time) int64 {
 	return t.UTC().UnixNano() / int64(time.Millisecond)
+}
+
+func normalizeCreatedBy(v string) string {
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return "UNKNOWN"
+	}
+	return v
+}
+
+func normalizeUpdatedBy(v string) string {
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return "NIL"
+	}
+	return v
 }
 
 func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, lastPulledAtMs int64) (created, updated []farmer.FarmerSyncRecord, deletedIDs []string, timestampMs int64, err error) {
@@ -703,6 +721,8 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 				total_amount::float8,
 				created_at,
 				updated_at,
+				created_by,
+				updated_by,
 				(deleted_at IS NULL) AS deleted_at_null,
 				COALESCE(deleted_at, 0) AS deleted_at_ms
 			FROM farmers
@@ -720,7 +740,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			if err := rows.Scan(
 				&row.ID, &row.ZoneName, &row.Name, &row.NationalID, &row.Community,
 				&row.Prefinance, &row.Balance, &row.TotalKg, &row.TotalAmount,
-				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAtMs,
+				&row.CreatedAt, &row.UpdatedAt, &row.CreatedBy, &row.UpdatedBy, &row.DeletedAtNull, &row.DeletedAtMs,
 			); err != nil {
 				return nil, nil, nil, 0, fmt.Errorf("scan farmer row: %w", err)
 			}
@@ -745,6 +765,8 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			total_amount::float8,
 			created_at,
 			updated_at,
+			created_by,
+			updated_by,
 			(deleted_at IS NULL) AS deleted_at_null,
 			COALESCE(deleted_at, 0) AS deleted_at_ms
 		FROM farmers
@@ -766,6 +788,8 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			total_amount::float8,
 			created_at,
 			updated_at,
+			created_by,
+			updated_by,
 			(deleted_at IS NULL) AS deleted_at_null,
 			COALESCE(deleted_at, 0) AS deleted_at_ms
 		FROM farmers
@@ -776,11 +800,19 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 	`
 	// deleted: deleted_at > last
 	deletedStmt := `
-		SELECT id::text
-		FROM farmers
-		WHERE zone_name = @zone_name
-		  AND deleted_at IS NOT NULL
-		  AND deleted_at > @last_ms
+		SELECT DISTINCT id
+		FROM (
+			SELECT id::text AS id
+			FROM farmers
+			WHERE zone_name = @zone_name
+			  AND deleted_at IS NOT NULL
+			  AND deleted_at > @last_ms
+			UNION ALL
+			SELECT farmer_id::text AS id
+			FROM farmer_deletions
+			WHERE zone_name = @zone_name
+			  AND deleted_at > @last_ms
+		) d
 	`
 
 	args := pgx.NamedArgs{"zone_name": zoneName, "last": last, "last_ms": lastPulledAtMs}
@@ -797,7 +829,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			if err := rows.Scan(
 				&row.ID, &row.ZoneName, &row.Name, &row.NationalID, &row.Community,
 				&row.Prefinance, &row.Balance, &row.TotalKg, &row.TotalAmount,
-				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAtMs,
+				&row.CreatedAt, &row.UpdatedAt, &row.CreatedBy, &row.UpdatedBy, &row.DeletedAtNull, &row.DeletedAtMs,
 			); err != nil {
 				return nil, nil, nil, 0, fmt.Errorf("scan created farmer: %w", err)
 			}
@@ -817,7 +849,7 @@ func (r *FarmerRepository) PullFarmers(ctx context.Context, zoneName string, las
 			if err := rows.Scan(
 				&row.ID, &row.ZoneName, &row.Name, &row.NationalID, &row.Community,
 				&row.Prefinance, &row.Balance, &row.TotalKg, &row.TotalAmount,
-				&row.CreatedAt, &row.UpdatedAt, &row.DeletedAtNull, &row.DeletedAtMs,
+				&row.CreatedAt, &row.UpdatedAt, &row.CreatedBy, &row.UpdatedBy, &row.DeletedAtNull, &row.DeletedAtMs,
 			); err != nil {
 				return nil, nil, nil, 0, fmt.Errorf("scan updated farmer: %w", err)
 			}
@@ -860,12 +892,14 @@ func (r *FarmerRepository) PushFarmers(
 		INSERT INTO farmers (
 			id, zone_name, name, national_id, community,
 			prefinance, balance, total_kg_brought, total_amount,
-			created_at, updated_at, deleted_at
+			created_at, updated_at, created_by, updated_by, deleted_at
 		) VALUES (
 			@id, @zone_name, @name, @national_id, @community,
 			@prefinance, @balance, @total_kg_brought, @total_amount,
 			to_timestamp(@created_at_ms::double precision / 1000.0),
 			to_timestamp(@updated_at_ms::double precision / 1000.0),
+			@created_by,
+			@updated_by,
 			NULL
 		)
 		ON CONFLICT (id) DO UPDATE SET
@@ -877,6 +911,7 @@ func (r *FarmerRepository) PushFarmers(
 			total_kg_brought = EXCLUDED.total_kg_brought,
 			total_amount = EXCLUDED.total_amount,
 			updated_at = EXCLUDED.updated_at,
+			updated_by = EXCLUDED.updated_by,
 			deleted_at = NULL
 		WHERE farmers.zone_name = EXCLUDED.zone_name
 	`
@@ -885,6 +920,10 @@ func (r *FarmerRepository) PushFarmers(
 		UPDATE farmers
 		SET deleted_at = (EXTRACT(EPOCH FROM now()) * 1000)::bigint, updated_at = now()
 		WHERE id = @id AND zone_name = @zone_name
+	`
+	clearDeletionTombstoneSQL := `
+		DELETE FROM farmer_deletions
+		WHERE farmer_id = @id::uuid AND zone_name = @zone_name
 	`
 
 	b := &pgx.Batch{}
@@ -902,6 +941,12 @@ func (r *FarmerRepository) PushFarmers(
 			"total_amount":     f.TotalAmount,
 			"created_at_ms":    f.CreatedAt,
 			"updated_at_ms":    f.UpdatedAt,
+			"created_by":       normalizeCreatedBy(f.AddedBy),
+			"updated_by":       normalizeUpdatedBy(f.UpdatedBy),
+		})
+		b.Queue(clearDeletionTombstoneSQL, pgx.NamedArgs{
+			"id":        f.ID,
+			"zone_name": zoneName,
 		})
 	}
 
@@ -951,6 +996,8 @@ func farmerSyncFromRow(row SyncFarmerRow) farmer.FarmerSyncRecord {
 		TotalAmount:    row.TotalAmount,
 		CreatedAt:      timeToMs(row.CreatedAt),
 		UpdatedAt:      timeToMs(row.UpdatedAt),
+		AddedBy:        row.CreatedBy,
+		UpdatedBy:      row.UpdatedBy,
 		DeletedAt:      deletedAt,
 	}
 }

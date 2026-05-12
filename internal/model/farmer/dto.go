@@ -182,6 +182,8 @@ type FarmerSyncRecord struct {
 
 	CreatedAt int64  `json:"created_at"`
 	UpdatedAt int64  `json:"updated_at"`
+	AddedBy   string `json:"added_by"`
+	UpdatedBy string `json:"updated_by"`
 	DeletedAt *int64 `json:"deleted_at,omitempty"`
 }
 
