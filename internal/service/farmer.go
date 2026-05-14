@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,8 @@ import (
 	"github.com/goku-m/gwi/internal/repository"
 	"github.com/goku-m/gwi/internal/server"
 )
+
+const maxSyncCreatedFarmers = 200
 
 type FarmerService struct {
 	server     *server.Server
@@ -278,6 +281,10 @@ func (s *FarmerService) Push(ctx context.Context, zoneName string, changes map[s
 
 	farmers, ok := changes["farmers"]
 	if ok {
+		if len(farmers.Created) > maxSyncCreatedFarmers {
+			return fmt.Errorf("sync blocked: created farmers exceeds limit (max %d)", maxSyncCreatedFarmers)
+		}
+
 		// Apply created + updated via upsert
 		upserts := make([]farmer.FarmerSyncRecord, 0, len(farmers.Created)+len(farmers.Updated))
 		upserts = append(upserts, farmers.Created...)
