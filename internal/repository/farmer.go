@@ -925,6 +925,12 @@ func (r *FarmerRepository) PushFarmers(
 		DELETE FROM farmer_deletions
 		WHERE farmer_id = @id::uuid AND zone_name = @zone_name
 	`
+	upsertDeletionTombstoneSQL := `
+		INSERT INTO farmer_deletions (farmer_id, zone_name, deleted_at)
+		VALUES (@id::uuid, @zone_name, NOW())
+		ON CONFLICT (farmer_id, zone_name) DO UPDATE
+		SET deleted_at = EXCLUDED.deleted_at
+	`
 
 	// Build an in-zone identity index so we can skip duplicates during sync.
 	type existingIdentity struct {
@@ -978,6 +984,10 @@ func (r *FarmerRepository) PushFarmers(
 				Str("community", f.Community).
 				Str("national_id", f.NationalID).
 				Msg("sync upsert skipped due to duplicate farmer identity in zone")
+			b.Queue(upsertDeletionTombstoneSQL, pgx.NamedArgs{
+				"id":        f.ID,
+				"zone_name": zoneName,
+			})
 			continue
 		}
 
