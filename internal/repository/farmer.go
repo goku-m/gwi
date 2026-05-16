@@ -926,9 +926,61 @@ func (r *FarmerRepository) PushFarmers(
 		WHERE farmer_id = @id::uuid AND zone_name = @zone_name
 	`
 
+	// Build an in-zone identity index so we can skip duplicates during sync.
+	type existingIdentity struct {
+		ID         uuid.UUID
+		Name       string
+		Community  string
+		NationalID string
+	}
+
+	existingRows, err := r.server.DB.Pool.Query(ctx, `
+		SELECT id, name, community, national_id
+		FROM farmers
+		WHERE LOWER(BTRIM(zone_name)) = LOWER(BTRIM(@zone_name))
+		  AND deleted_at IS NULL
+	`, pgx.NamedArgs{"zone_name": zoneName})
+	if err != nil {
+		return fmt.Errorf("load existing farmers for duplicate check failed zone=%s: %w", zoneName, err)
+	}
+	defer existingRows.Close()
+
+	existingByID := make(map[string]string)
+	existingByIdentity := make(map[string]string)
+	for existingRows.Next() {
+		var row existingIdentity
+		if scanErr := existingRows.Scan(&row.ID, &row.Name, &row.Community, &row.NationalID); scanErr != nil {
+			return fmt.Errorf("scan existing farmer for duplicate check failed zone=%s: %w", zoneName, scanErr)
+		}
+		idStr := row.ID.String()
+		identityKey := normalizeFarmerIdentityKey(row.Name, row.Community, row.NationalID)
+		existingByID[idStr] = identityKey
+		if _, present := existingByIdentity[identityKey]; !present {
+			existingByIdentity[identityKey] = idStr
+		}
+	}
+	if err := existingRows.Err(); err != nil {
+		return fmt.Errorf("iterate existing farmers for duplicate check failed zone=%s: %w", zoneName, err)
+	}
+
 	b := &pgx.Batch{}
 
 	for _, f := range upserts {
+		identityKey := normalizeFarmerIdentityKey(f.Name, f.Community, f.NationalID)
+		existingIdentityKeyForID, existsByID := existingByID[f.ID]
+		conflictingID, existsByIdentity := existingByIdentity[identityKey]
+		if shouldSkipSyncUpsert(existsByID, existsByIdentity, f.ID, conflictingID) {
+			r.server.Logger.Info().
+				Str("zone", zoneName).
+				Str("incoming_id", f.ID).
+				Str("conflicting_id", conflictingID).
+				Str("name", f.Name).
+				Str("community", f.Community).
+				Str("national_id", f.NationalID).
+				Msg("sync upsert skipped due to duplicate farmer identity in zone")
+			continue
+		}
+
 		b.Queue(upsertSQL, pgx.NamedArgs{
 			"id":               f.ID,
 			"zone_name":        zoneName, // enforce route zone
@@ -948,6 +1000,12 @@ func (r *FarmerRepository) PushFarmers(
 			"id":        f.ID,
 			"zone_name": zoneName,
 		})
+
+		if existsByID {
+			delete(existingByIdentity, existingIdentityKeyForID)
+		}
+		existingByID[f.ID] = identityKey
+		existingByIdentity[identityKey] = f.ID
 	}
 
 	for _, id := range deletedIDs {
@@ -1000,4 +1058,14 @@ func farmerSyncFromRow(row SyncFarmerRow) farmer.FarmerSyncRecord {
 		UpdatedBy:      row.UpdatedBy,
 		DeletedAt:      deletedAt,
 	}
+}
+
+func normalizeFarmerIdentityKey(name, community, nationalID string) string {
+	return strings.ToLower(strings.TrimSpace(name)) + "|" +
+		strings.ToLower(strings.TrimSpace(community)) + "|" +
+		strings.ToLower(strings.TrimSpace(nationalID))
+}
+
+func shouldSkipSyncUpsert(existsByID, existsByIdentity bool, incomingID, conflictingID string) bool {
+	return existsByIdentity && (!existsByID || conflictingID != incomingID)
 }

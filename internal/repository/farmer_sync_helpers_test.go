@@ -62,3 +62,65 @@ func TestFarmerSyncFromRowMapsAddedUpdatedBy(t *testing.T) {
 		t.Fatalf("expected nil DeletedAt, got %v", *record.DeletedAt)
 	}
 }
+
+func TestNormalizeFarmerIdentityKey(t *testing.T) {
+	got := normalizeFarmerIdentityKey("  John Doe ", " North ", " AB-123 ")
+	want := "john doe|north|ab-123"
+	if got != want {
+		t.Fatalf("expected %q, got %q", want, got)
+	}
+}
+
+func TestShouldSkipSyncUpsert(t *testing.T) {
+	cases := []struct {
+		name             string
+		existsByID       bool
+		existsByIdentity bool
+		incomingID       string
+		conflictingID    string
+		wantSkip         bool
+	}{
+		{
+			name:             "allow when identity does not exist",
+			existsByID:       false,
+			existsByIdentity: false,
+			incomingID:       "new-id",
+			conflictingID:    "",
+			wantSkip:         false,
+		},
+		{
+			name:             "allow update when same id owns identity",
+			existsByID:       true,
+			existsByIdentity: true,
+			incomingID:       "same-id",
+			conflictingID:    "same-id",
+			wantSkip:         false,
+		},
+		{
+			name:             "skip when another id already has identity",
+			existsByID:       false,
+			existsByIdentity: true,
+			incomingID:       "new-id",
+			conflictingID:    "existing-id",
+			wantSkip:         true,
+		},
+		{
+			name:             "skip when incoming id exists but identity belongs to different id",
+			existsByID:       true,
+			existsByIdentity: true,
+			incomingID:       "id-a",
+			conflictingID:    "id-b",
+			wantSkip:         true,
+		},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got := shouldSkipSyncUpsert(tc.existsByID, tc.existsByIdentity, tc.incomingID, tc.conflictingID)
+			if got != tc.wantSkip {
+				t.Fatalf("expected skip=%v, got %v", tc.wantSkip, got)
+			}
+		})
+	}
+}
