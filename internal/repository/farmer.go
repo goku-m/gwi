@@ -927,7 +927,7 @@ func (r *FarmerRepository) PushFarmers(
 	`
 	upsertDeletionTombstoneSQL := `
 		INSERT INTO farmer_deletions (farmer_id, zone_name, deleted_at)
-		VALUES (@id::uuid, @zone_name, NOW())
+		VALUES (@id::uuid, @zone_name, (EXTRACT(EPOCH FROM NOW()) * 1000)::bigint)
 		ON CONFLICT (farmer_id, zone_name) DO UPDATE
 		SET deleted_at = EXCLUDED.deleted_at
 	`
