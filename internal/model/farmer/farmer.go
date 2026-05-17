@@ -87,6 +87,24 @@ type NewFarmersStats struct {
 	SinceDate  string `json:"sinceDate" db:"since_date"`
 }
 
+type DailyLogEntry struct {
+	Date      string  `json:"date"`
+	Time      string  `json:"time"`
+	CreatedBy string  `json:"createdBy"`
+	UpdatedBy string  `json:"updatedBy"`
+	ZoneName  string  `json:"zoneName"`
+	Count     int     `json:"count"`
+	Action    string  `json:"action"`
+	Amount    float64 `json:"amount"`
+	WeightKg  float64 `json:"weightKg"`
+	Communities int   `json:"communities"`
+}
+
+type DailyLogsResponse struct {
+	Date string          `json:"date"`
+	Logs []DailyLogEntry `json:"logs"`
+}
+
 // --------------------------------------------------
 // Helper methods
 // --------------------------------------------------

@@ -57,6 +57,20 @@ func Home() templ.Component {
       top: 0;
       height: 100vh;
       overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-top {
+      display: grid;
+      gap: 10px;
+    }
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 14px;
+    }
+    .sidebar-divider {
+      border-top: 1px solid var(--border);
+      margin-bottom: 10px;
     }
     .brand {
       margin: 6px 10px 18px;
@@ -70,6 +84,27 @@ func Home() templ.Component {
     .zone-list {
       display: grid;
       gap: 8px;
+    }
+    .nav-link {
+      display: block;
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+    }
+    .nav-link:hover {
+      border-color: #a7cfc8;
+      transform: translateY(-1px);
+    }
+    .mobile-logs-link {
+      display: none;
+      margin-bottom: 10px;
     }
     .zone-mobile-picker {
       display: none;
@@ -323,6 +358,12 @@ func Home() templ.Component {
         border-right: 0;
         border-bottom: 1px solid var(--border);
       }
+      .sidebar-bottom {
+        display: none;
+      }
+      .mobile-logs-link {
+        display: block;
+      }
       .zone-list {
         display: none;
       }
@@ -346,32 +387,39 @@ func Home() templ.Component {
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <div class="brand">
-        <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
+      <div class="sidebar-top">
+        <div class="brand">
+          <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
+        </div>
+        <div class="zone-mobile-picker">
+          <a class="nav-link mobile-logs-link" href="/logs">Daily Logs</a>
+          <label class="community-label" for="zoneMobileSelect">Select Zone</label>
+          <select id="zoneMobileSelect" class="zone-mobile-select" aria-label="Zone select">
+            <option value="General">General</option>
+            <option value="Wa">Wa</option>
+            <option value="Yendi">Yendi</option>
+            <option value="Tamale">Tamale</option>
+            <option value="Sandema">Sandema</option>
+            <option value="Garu">Garu</option>
+            <option value="Langbinsi">Langbinsi</option>
+            <option value="Napkaduri">Napkanduri</option>
+          </select>
+        </div>
+        <nav class="zone-list" id="zoneList">
+          <button class="zone-btn active" data-zone="General">General</button>
+          <button class="zone-btn" data-zone="Wa">Wa</button>
+          <button class="zone-btn" data-zone="Yendi">Yendi</button>
+          <button class="zone-btn" data-zone="Tamale">Tamale</button>
+          <button class="zone-btn" data-zone="Sandema">Sandema</button>
+          <button class="zone-btn" data-zone="Garu">Garu</button>
+          <button class="zone-btn" data-zone="Langbinsi">Langbinsi</button>
+          <button class="zone-btn" data-zone="Napkaduri">Napkanduri</button>
+        </nav>
       </div>
-      <div class="zone-mobile-picker">
-        <label class="community-label" for="zoneMobileSelect">Select Zone</label>
-        <select id="zoneMobileSelect" class="zone-mobile-select" aria-label="Zone select">
-          <option value="General">General</option>
-          <option value="Wa">Wa</option>
-          <option value="Yendi">Yendi</option>
-          <option value="Tamale">Tamale</option>
-          <option value="Sandema">Sandema</option>
-          <option value="Garu">Garu</option>
-          <option value="Langbinsi">Langbinsi</option>
-          <option value="Napkaduri">Napkanduri</option>
-        </select>
+      <div class="sidebar-bottom">
+        <div class="sidebar-divider"></div>
+        <a class="nav-link" href="/logs">Logs</a>
       </div>
-      <nav class="zone-list" id="zoneList">
-        <button class="zone-btn active" data-zone="General">General</button>
-        <button class="zone-btn" data-zone="Wa">Wa</button>
-        <button class="zone-btn" data-zone="Yendi">Yendi</button>
-        <button class="zone-btn" data-zone="Tamale">Tamale</button>
-        <button class="zone-btn" data-zone="Sandema">Sandema</button>
-        <button class="zone-btn" data-zone="Garu">Garu</button>
-        <button class="zone-btn" data-zone="Langbinsi">Langbinsi</button>
-        <button class="zone-btn" data-zone="Napkaduri">Napkanduri</button>
-      </nav>
     </aside>
     <main class="main" id="dashboardMain">
       <section class="header">

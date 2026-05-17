@@ -222,6 +222,21 @@ func (s *FarmerService) GetGeneralNewFarmersCount(ctx echo.Context, sinceDate ti
 	return stats, nil
 }
 
+func (s *FarmerService) GetDailyLogs(ctx echo.Context, logDate time.Time) (*farmer.DailyLogsResponse, error) {
+	logger := middleware.GetLogger(ctx)
+
+	logs, err := s.farmerRepo.GetDailyLogs(ctx.Request().Context(), logDate)
+	if err != nil {
+		logger.Error().Err(err).Str("date", logDate.Format("2006-01-02")).Msg("failed to fetch daily logs")
+		return nil, err
+	}
+
+	return &farmer.DailyLogsResponse{
+		Date:  logDate.Format("2006-01-02"),
+		Logs:  logs,
+	}, nil
+}
+
 func (s *FarmerService) GetZoneNewFarmersCount(ctx echo.Context, zoneName string, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
 	logger := middleware.GetLogger(ctx)
 

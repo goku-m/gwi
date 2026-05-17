@@ -569,6 +569,176 @@ func (r *FarmerRepository) GetGeneralNewFarmersCount(ctx context.Context, sinceD
 	return &stats, nil
 }
 
+func (r *FarmerRepository) GetDailyLogs(ctx context.Context, logDate time.Time) ([]farmer.DailyLogEntry, error) {
+	stmt := `
+		WITH created_logs AS (
+			SELECT
+				MIN(created_at) AS event_at,
+				TO_CHAR(MIN(created_at), 'DD/MM/YY') AS date_label,
+				TO_CHAR(MIN(created_at), 'HH24:MI') AS time_label,
+				BTRIM(created_by) AS created_by,
+				''::text AS updated_by,
+				BTRIM(zone_name) AS zone_name,
+				COUNT(*)::int AS farmers_count,
+				COUNT(DISTINCT NULLIF(BTRIM(community), ''))::int AS communities_count,
+				'created'::text AS action,
+				0::float8 AS amount,
+				0::float8 AS weight_kg
+			FROM farmers
+			WHERE deleted_at IS NULL
+			  AND created_at::date = @log_date::date
+			  AND BTRIM(created_by) <> ''
+			  AND LENGTH(BTRIM(created_by)) > 1
+			  AND UPPER(BTRIM(created_by)) NOT IN ('NIL', 'UNKNOWN')
+			GROUP BY BTRIM(created_by), BTRIM(zone_name)
+		),
+		updated_logs AS (
+			SELECT
+				MAX(updated_at) AS event_at,
+				TO_CHAR(MAX(updated_at), 'DD/MM/YY') AS date_label,
+				TO_CHAR(MAX(updated_at), 'HH24:MI') AS time_label,
+				''::text AS created_by,
+				BTRIM(updated_by) AS updated_by,
+				BTRIM(zone_name) AS zone_name,
+				0::int AS farmers_count,
+				COUNT(DISTINCT NULLIF(BTRIM(community), ''))::int AS communities_count,
+				'updated'::text AS action,
+				COALESCE(SUM(prefinance), 0)::float8 AS amount,
+				0::float8 AS weight_kg
+			FROM farmers
+			WHERE deleted_at IS NULL
+			  AND updated_at::date = @log_date::date
+			  AND BTRIM(updated_by) <> ''
+			  AND LENGTH(BTRIM(updated_by)) > 1
+			  AND UPPER(BTRIM(updated_by)) NOT IN ('NIL', 'UNKNOWN')
+			GROUP BY BTRIM(updated_by), BTRIM(zone_name)
+		),
+		weighed_logs AS (
+			SELECT
+				MAX(updated_at) AS event_at,
+				TO_CHAR(MAX(updated_at), 'DD/MM/YY') AS date_label,
+				TO_CHAR(MAX(updated_at), 'HH24:MI') AS time_label,
+				''::text AS created_by,
+				BTRIM(updated_by) AS updated_by,
+				BTRIM(zone_name) AS zone_name,
+				0::int AS farmers_count,
+				COUNT(DISTINCT NULLIF(BTRIM(community), ''))::int AS communities_count,
+				'weighed'::text AS action,
+				COALESCE(SUM(total_amount), 0)::float8 AS amount,
+				COALESCE(SUM(total_kg_brought), 0)::float8 AS weight_kg
+			FROM farmers
+			WHERE deleted_at IS NULL
+			  AND updated_at::date = @log_date::date
+			  AND BTRIM(updated_by) <> ''
+			  AND LENGTH(BTRIM(updated_by)) > 1
+			  AND UPPER(BTRIM(updated_by)) NOT IN ('NIL', 'UNKNOWN')
+			GROUP BY BTRIM(updated_by), BTRIM(zone_name)
+			HAVING COALESCE(SUM(total_kg_brought), 0) > 0
+		)
+		SELECT
+			date_label,
+			time_label,
+			created_by,
+			updated_by,
+			zone_name,
+			farmers_count,
+			communities_count,
+			action,
+			amount,
+			weight_kg
+		FROM (
+			SELECT * FROM created_logs
+			UNION ALL
+			SELECT * FROM updated_logs
+			UNION ALL
+			SELECT * FROM weighed_logs
+		) logs
+		ORDER BY event_at ASC
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"log_date": logDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get daily logs failed date=%s: %w", logDate.Format("2006-01-02"), err)
+	}
+	defer rows.Close()
+
+	logs := make([]farmer.DailyLogEntry, 0)
+	for rows.Next() {
+		var entry farmer.DailyLogEntry
+		if err := rows.Scan(
+			&entry.Date,
+			&entry.Time,
+			&entry.CreatedBy,
+			&entry.UpdatedBy,
+			&entry.ZoneName,
+			&entry.Count,
+			&entry.Communities,
+			&entry.Action,
+			&entry.Amount,
+			&entry.WeightKg,
+		); err != nil {
+			return nil, fmt.Errorf("scan daily log failed date=%s: %w", logDate.Format("2006-01-02"), err)
+		}
+		logs = append(logs, entry)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate daily logs failed date=%s: %w", logDate.Format("2006-01-02"), err)
+	}
+
+	return logs, nil
+}
+
+func (r *FarmerRepository) GetDailyLogNames(ctx context.Context, logDate time.Time) ([]string, error) {
+	stmt := `
+		WITH names AS (
+			SELECT BTRIM(created_by) AS name
+			FROM farmers
+			WHERE deleted_at IS NULL
+			  AND created_at::date = @log_date::date
+			  AND BTRIM(created_by) <> ''
+			  AND LENGTH(BTRIM(created_by)) > 1
+			  AND UPPER(BTRIM(created_by)) NOT IN ('NIL', 'UNKNOWN')
+			UNION
+			SELECT BTRIM(updated_by) AS name
+			FROM farmers
+			WHERE deleted_at IS NULL
+			  AND updated_at::date = @log_date::date
+			  AND BTRIM(updated_by) <> ''
+			  AND LENGTH(BTRIM(updated_by)) > 1
+			  AND UPPER(BTRIM(updated_by)) NOT IN ('NIL', 'UNKNOWN')
+		)
+		SELECT name
+		FROM names
+		ORDER BY LOWER(name) ASC
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"log_date": logDate,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get daily log names failed date=%s: %w", logDate.Format("2006-01-02"), err)
+	}
+	defer rows.Close()
+
+	names := make([]string, 0)
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, fmt.Errorf("scan daily log name failed date=%s: %w", logDate.Format("2006-01-02"), err)
+		}
+		names = append(names, name)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate daily log names failed date=%s: %w", logDate.Format("2006-01-02"), err)
+	}
+
+	return names, nil
+}
+
 func (r *FarmerRepository) GetZoneNewFarmersCount(ctx context.Context, zoneName string, sinceDate time.Time) (*farmer.NewFarmersStats, error) {
 	stmt := `
 		SELECT

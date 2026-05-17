@@ -71,6 +71,22 @@ func parseStatsDateRange(c echo.Context) (*time.Time, *time.Time, error) {
 	return fromDate, toDate, nil
 }
 
+func parseLogDate(c echo.Context) (time.Time, error) {
+	const layout = "2006-01-02"
+
+	dateRaw := strings.TrimSpace(c.QueryParam("date"))
+	if dateRaw == "" {
+		return time.Time{}, echo.NewHTTPError(http.StatusBadRequest, "date is required, use YYYY-MM-DD")
+	}
+
+	parsed, err := time.Parse(layout, dateRaw)
+	if err != nil {
+		return time.Time{}, echo.NewHTTPError(http.StatusBadRequest, "invalid date, use YYYY-MM-DD")
+	}
+
+	return parsed, nil
+}
+
 // func parseFloatPtr(v string) (*float64, error) {
 // 	v = strings.TrimSpace(v)
 // 	if v == "" {
@@ -254,6 +270,20 @@ func (h *FarmerHandler) GetGeneralNewFarmers(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, stats)
+}
+
+func (h *FarmerHandler) GetDailyLogNames(c echo.Context) error {
+	logDate, err := parseLogDate(c)
+	if err != nil {
+		return err
+	}
+
+	result, svcErr := h.farmerService.GetDailyLogs(c, logDate)
+	if svcErr != nil {
+		return svcErr
+	}
+
+	return c.JSON(http.StatusOK, result)
 }
 
 func (h *FarmerHandler) GetZoneNewFarmers(c echo.Context) error {

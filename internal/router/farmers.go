@@ -10,6 +10,7 @@ func registerFarmerRoutes(r *echo.Group, h *handler.FarmerHandler, auth *middlew
 	// General stats across all zones
 	r.GET("/farmers/stats", h.GetGeneralStats)
 	r.GET("/farmers/new", h.GetGeneralNewFarmers)
+	r.GET("/farmers/logs", h.GetDailyLogNames)
 
 	// ------------------------------------------------------------
 	// Zone-scoped routes
