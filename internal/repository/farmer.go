@@ -580,7 +580,7 @@ func (r *FarmerRepository) GetDailyLogs(ctx context.Context, logDate time.Time) 
 				''::text AS updated_by,
 				BTRIM(zone_name) AS zone_name,
 				COUNT(*)::int AS farmers_count,
-				COUNT(DISTINCT NULLIF(BTRIM(community), ''))::int AS communities_count,
+				COALESCE(STRING_AGG(DISTINCT INITCAP(LOWER(NULLIF(BTRIM(community), ''))), ', '), '') AS community_names,
 				'created'::text AS action,
 				0::float8 AS amount,
 				0::float8 AS weight_kg
@@ -601,7 +601,7 @@ func (r *FarmerRepository) GetDailyLogs(ctx context.Context, logDate time.Time) 
 				BTRIM(updated_by) AS updated_by,
 				BTRIM(zone_name) AS zone_name,
 				0::int AS farmers_count,
-				COUNT(DISTINCT NULLIF(BTRIM(community), ''))::int AS communities_count,
+				COALESCE(STRING_AGG(DISTINCT INITCAP(LOWER(NULLIF(BTRIM(community), ''))), ', '), '') AS community_names,
 				'updated'::text AS action,
 				COALESCE(SUM(prefinance), 0)::float8 AS amount,
 				0::float8 AS weight_kg
@@ -622,7 +622,7 @@ func (r *FarmerRepository) GetDailyLogs(ctx context.Context, logDate time.Time) 
 				BTRIM(updated_by) AS updated_by,
 				BTRIM(zone_name) AS zone_name,
 				0::int AS farmers_count,
-				COUNT(DISTINCT NULLIF(BTRIM(community), ''))::int AS communities_count,
+				COALESCE(STRING_AGG(DISTINCT INITCAP(LOWER(NULLIF(BTRIM(community), ''))), ', '), '') AS community_names,
 				'weighed'::text AS action,
 				COALESCE(SUM(total_amount), 0)::float8 AS amount,
 				COALESCE(SUM(total_kg_brought), 0)::float8 AS weight_kg
@@ -642,7 +642,7 @@ func (r *FarmerRepository) GetDailyLogs(ctx context.Context, logDate time.Time) 
 			updated_by,
 			zone_name,
 			farmers_count,
-			communities_count,
+			community_names,
 			action,
 			amount,
 			weight_kg
@@ -674,7 +674,7 @@ func (r *FarmerRepository) GetDailyLogs(ctx context.Context, logDate time.Time) 
 			&entry.UpdatedBy,
 			&entry.ZoneName,
 			&entry.Count,
-			&entry.Communities,
+			&entry.CommunityNames,
 			&entry.Action,
 			&entry.Amount,
 			&entry.WeightKg,

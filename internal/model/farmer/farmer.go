@@ -97,7 +97,7 @@ type DailyLogEntry struct {
 	Action    string  `json:"action"`
 	Amount    float64 `json:"amount"`
 	WeightKg  float64 `json:"weightKg"`
-	Communities int   `json:"communities"`
+	CommunityNames string `json:"communityNames"`
 }
 
 type DailyLogsResponse struct {
