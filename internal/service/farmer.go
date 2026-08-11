@@ -185,7 +185,7 @@ func (s *FarmerService) GetGeneralOverview(ctx echo.Context) (*farmer.AnalyticsO
 
 	stats, err := s.farmerRepo.GetGeneralOverview(ctx.Request().Context())
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to fetch general analytics overview")
+		logger.Error().Err(err).Msg("failed to fetch general overview")
 		return nil, err
 	}
 
@@ -197,7 +197,7 @@ func (s *FarmerService) GetZoneOverview(ctx echo.Context, zoneName string) (*far
 
 	stats, err := s.farmerRepo.GetZoneOverview(ctx.Request().Context(), zoneName)
 	if err != nil {
-		logger.Error().Err(err).Str("zone", zoneName).Msg("failed to fetch zone analytics overview")
+		logger.Error().Err(err).Str("zone", zoneName).Msg("failed to fetch zone overview")
 		return nil, err
 	}
 

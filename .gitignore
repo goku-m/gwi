@@ -26,3 +26,4 @@ go.work.sum
 .env
 .env prod
 .gocache
+.gocache-local

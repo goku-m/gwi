@@ -22,9 +22,9 @@ func Logs() templ.Component {
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <style>
     :root {
-      --bg: #eef8ee;
+      --bg: #f3f4f6;
       --surface: #ffffff;
-      --surface-soft: #f8fbfa;
+      --surface-soft: #f8fafc;
       --text: #102127;
       --muted: #56707d;
       --accent: #166534;
@@ -253,7 +253,6 @@ func Logs() templ.Component {
       <a class="nav-link" href="/">Home</a>
       <a class="nav-link active" href="/logs">Daily Logs</a>
       <a class="nav-link" href="/recovery">Recovery</a>
-      <a class="nav-link" href="/analytics">Analytics</a>
     </div>
     <header class="header">
       <div class="header-row">
@@ -265,7 +264,6 @@ func Logs() templ.Component {
           <a class="nav-link" href="/">Home</a>
           <a class="nav-link active" href="/logs">Daily Logs</a>
           <a class="nav-link" href="/recovery">Recovery</a>
-          <a class="nav-link" href="/analytics">Analytics</a>
         </nav>
       </div>
   

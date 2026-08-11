@@ -23,9 +23,9 @@ func Recovery() templ.Component {
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <style>
     :root {
-      --bg: #eef8ee;
+      --bg: #f3f4f6;
       --surface: #ffffff;
-      --surface-soft: #f8fbfa;
+      --surface-soft: #f8fafc;
       --text: #102127;
       --muted: #56707d;
       --accent: #166534;
@@ -47,7 +47,7 @@ func Recovery() templ.Component {
       grid-template-columns: 260px 1fr;
     }
     .sidebar {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fcfb 100%);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
       border-right: 1px solid var(--border);
       padding: 22px 14px;
       position: sticky;
@@ -136,7 +136,7 @@ func Recovery() templ.Component {
       margin: 0 10px 10px;
     }
     .community-zone-picker {
-      display: none;
+      display: grid;
       gap: 6px;
     }
     .zone-mobile-select {
@@ -214,9 +214,19 @@ func Recovery() templ.Component {
       font-weight: 700;
     }
     .community-picker {
+      display: flex;
+      align-items: end;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
       min-width: 220px;
+    }
+    .community-zone-picker,
+    .community-community-picker {
       display: grid;
       gap: 6px;
+      min-width: 180px;
+      flex: 1 1 180px;
     }
     .community-label {
       color: var(--muted);
@@ -394,9 +404,13 @@ func Recovery() templ.Component {
       }
       .community-picker {
         margin-top: 0;
+        justify-content: stretch;
+      }
+      .community-zone-picker,
+      .community-community-picker {
+        min-width: 0;
       }
       .dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .community-zone-picker { display: grid; }
     }
     @media (max-width: 560px) {
       .main { padding: 14px; }
@@ -430,11 +444,10 @@ func Recovery() templ.Component {
           <a class="nav-link" href="/">Home</a>
           <a class="nav-link" href="/logs">Logs</a>
           <a class="nav-link active" href="/recovery">Recovery</a>
-          <a class="nav-link" href="/analytics">Analytics</a>
-      </div>
+        </div>
       </div>
     </aside>
-    <main class="main" id="analyticsMain">
+    <main class="main" id="recoveryMain">
       <div class="main-mobile-brand">
         <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
       </div>
@@ -442,7 +455,6 @@ func Recovery() templ.Component {
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/logs">Daily Logs</a>
         <a class="nav-link active" href="/recovery">Recovery</a>
-        <a class="nav-link" href="/analytics">Analytics</a>
       </div>
       <section class="header">
         <div class="header-left">
@@ -466,11 +478,17 @@ func Recovery() templ.Component {
               <option value="Napkaduri">Napkanduri</option>
             </select>
           </div>
+          <div class="community-community-picker">
+            <label class="community-label" for="communitySelect">Community</label>
+            <select id="communitySelect" class="zone-mobile-select" aria-label="Community select">
+              <option value="">All communities</option>
+            </select>
+          </div>
         </div>
       </section>
       <div class="loading-indicator" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>
-        <span>Fetching latest analytics...</span>
+        <span>Fetching latest data...</span>
       </div>
       <section class="recovery-dashboard">
      
@@ -513,11 +531,14 @@ func Recovery() templ.Component {
       const recoveredPrefinance = document.getElementById("recoveredPrefinance");
       const outstandingBalance = document.getElementById("outstandingBalance");
       const totalPrefinanceValue = document.getElementById("totalPrefinanceValue");
-      const analyticsMain = document.getElementById("analyticsMain");
+      const recoveryMain = document.getElementById("recoveryMain");
       const zoneMobileSelect = document.getElementById("zoneMobileSelect");
+      const communitySelect = document.getElementById("communitySelect");
 
       let selectedZone = "General";
+      let selectedCommunity = "";
       let activeRequestController = null;
+      const communitiesByZone = {};
 
       function formatNumber(value, maxFractionDigits) {
         const n = Number(value || 0);
@@ -528,8 +549,12 @@ func Recovery() templ.Component {
         return "GH\u20B5 " + formatNumber(value, 2);
       }
 
+      function normalizeForCompare(value) {
+        return (value || "").trim().toLowerCase();
+      }
+
       function setLoading() {
-        analyticsMain.classList.add("loading");
+        recoveryMain.classList.add("loading");
         totalSyncs.textContent = "...";
         if (recoveryRateValue) recoveryRateValue.textContent = "...";
         if (recoveryRateSummary) recoveryRateSummary.textContent = "Loading recovery snapshot...";
@@ -559,6 +584,114 @@ func Recovery() templ.Component {
         if (totalPrefinanceValue) totalPrefinanceValue.textContent = formatCurrency(prefinance);
       }
 
+      function renderCommunityOptions(communities) {
+        communitySelect.innerHTML = "";
+
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "All communities";
+        communitySelect.appendChild(defaultOption);
+
+        communities.forEach(function (community) {
+          const option = document.createElement("option");
+          option.value = community;
+          option.textContent = community;
+          communitySelect.appendChild(option);
+        });
+      }
+
+      async function loadCommunities(zone) {
+        selectedCommunity = "";
+        communitySelect.value = "";
+        communitySelect.disabled = true;
+        renderCommunityOptions([]);
+
+        if (zone === "General") {
+          communitySelect.disabled = true;
+          return;
+        }
+
+        communitySelect.disabled = false;
+
+        if (communitiesByZone[zone]) {
+          renderCommunityOptions(communitiesByZone[zone]);
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/zones/" + encodeURIComponent(zone) + "/communities");
+          if (!response.ok) {
+            throw new Error("Request failed with status " + response.status);
+          }
+
+          const payload = await response.json();
+          const seenCommunities = new Set();
+          const communities = (Array.isArray(payload.communities) ? payload.communities : []).reduce(function (acc, community) {
+            const cleanName = (community || "").trim();
+            if (cleanName.length < 3) {
+              return acc;
+            }
+
+            const dedupeKey = cleanName.toLowerCase();
+            if (seenCommunities.has(dedupeKey)) {
+              return acc;
+            }
+
+            seenCommunities.add(dedupeKey);
+            acc.push(cleanName);
+            return acc;
+          }, []);
+
+          communitiesByZone[zone] = communities;
+          renderCommunityOptions(communities);
+        } catch (err) {
+          communitiesByZone[zone] = [];
+          renderCommunityOptions([]);
+        }
+      }
+
+      async function loadRecoveryData(zone, community) {
+        if (activeRequestController) {
+          activeRequestController.abort();
+        }
+
+        activeRequestController = new AbortController();
+        const controller = activeRequestController;
+
+        selectedZoneTitle.textContent = zone;
+        subtitleText.textContent = community ? "Community: " + community : "Overall zone recovery overview";
+        subtitleSyncs.style.display = "inline-flex";
+        setLoading();
+
+        const route = community
+          ? "/api/zones/" + encodeURIComponent(zone) + "/" + encodeURIComponent(community) + "/farmers/stats"
+          : zone === "General"
+            ? "/api/farmers/overview"
+            : "/api/zones/" + encodeURIComponent(zone) + "/farmers/overview";
+
+        try {
+          const data = await fetchJson(route, controller.signal);
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          const syncCount = typeof data.totalSyncs !== "undefined" ? data.totalSyncs : data.dailySyncs;
+          totalSyncs.textContent = formatNumber(syncCount, 0);
+          renderRecoveryDashboard(data);
+          recoveryMain.classList.remove("loading");
+        } catch (err) {
+          if (err.name === "AbortError") {
+            return;
+          }
+          recoveryMain.classList.remove("loading");
+        } finally {
+          if (activeRequestController === controller) {
+            activeRequestController = null;
+          }
+        }
+      }
+
       async function fetchJson(route, signal) {
         const response = await fetch(route, { signal: signal });
         if (!response.ok) {
@@ -568,52 +701,14 @@ func Recovery() templ.Component {
         return response.json();
       }
 
-      async function loadZoneAnalytics(zone) {
-        if (activeRequestController) {
-          activeRequestController.abort();
-        }
-
-        activeRequestController = new AbortController();
-        const controller = activeRequestController;
-
-        selectedZoneTitle.textContent = zone;
-        subtitleText.textContent = "Overall zone recovery overview";
-        subtitleSyncs.style.display = "inline-flex";
-        setLoading();
-
-        const overviewRoute = zone === "General"
-          ? "/api/farmers/overview"
-          : "/api/zones/" + encodeURIComponent(zone) + "/farmers/overview";
-
-        try {
-          const data = await fetchJson(overviewRoute, controller.signal);
-
-          if (controller.signal.aborted) {
-            return;
-          }
-
-          totalSyncs.textContent = formatNumber(data.totalSyncs, 0);
-          renderRecoveryDashboard(data);
-          analyticsMain.classList.remove("loading");
-        } catch (err) {
-          if (err.name === "AbortError") {
-            return;
-          }
-          analyticsMain.classList.remove("loading");
-        } finally {
-          if (activeRequestController === controller) {
-            activeRequestController = null;
-          }
-        }
-      }
-
       zoneButtons.forEach(function (button) {
         button.addEventListener("click", function () {
           zoneButtons.forEach(function (b) { b.classList.remove("active"); });
           button.classList.add("active");
           selectedZone = button.dataset.zone;
           zoneMobileSelect.value = selectedZone;
-          loadZoneAnalytics(selectedZone);
+          loadCommunities(selectedZone);
+          loadRecoveryData(selectedZone, "");
         });
       });
 
@@ -623,9 +718,32 @@ func Recovery() templ.Component {
         zoneButtons.forEach(function (b) {
           b.classList.toggle("active", b.dataset.zone === zone);
         });
-        loadZoneAnalytics(selectedZone);
+        loadCommunities(selectedZone);
+        loadRecoveryData(selectedZone, "");
       });
-      loadZoneAnalytics("General");
+
+      communitySelect.addEventListener("change", function () {
+        selectedCommunity = communitySelect.value.trim();
+        if (!selectedCommunity) {
+          loadRecoveryData(selectedZone, "");
+          return;
+        }
+
+        const communities = communitiesByZone[selectedZone] || [];
+        const match = communities.find(function (community) {
+          return normalizeForCompare(community) === normalizeForCompare(selectedCommunity);
+        });
+
+        if (!match) {
+          loadRecoveryData(selectedZone, "");
+          return;
+        }
+
+        loadRecoveryData(selectedZone, match);
+      });
+
+      loadCommunities("General");
+      loadRecoveryData("General", "");
     })();
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>

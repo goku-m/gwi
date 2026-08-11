@@ -32,9 +32,9 @@ func Home() templ.Component {
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <style>
     :root {
-      --bg: #eef8ee;
+      --bg: #f3f4f6;
       --surface: #ffffff;
-      --surface-soft: #f8fbfa;
+      --surface-soft: #f8fafc;
       --text: #102127;
       --muted: #56707d;
       --accent: #166534;
@@ -56,7 +56,7 @@ func Home() templ.Component {
       grid-template-columns: 260px 1fr;
     }
     .sidebar {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fcfb 100%);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
       border-right: 1px solid var(--border);
       padding: 22px 14px;
       position: sticky;
@@ -303,42 +303,50 @@ func Home() templ.Component {
     }
     .cards {
       display: grid;
-      gap: 14px;
-      grid-template-columns: repeat(2, minmax(190px, 1fr));
+      gap: 12px;
+      grid-template-columns: minmax(0, 1fr);
+      margin-bottom: 14px;
     }
     .card {
-      background: var(--surface-soft);
+      background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 8px 10px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      min-height: 108px;
+      display: grid;
+      gap: 6px;
     }
     .card-label {
       display: block;
-      margin: 0 0 4px;
+      margin: 0;
       color: var(--muted);
-      font-size: 0.74rem;
-      font-weight: 700;
+      font-size: 0.76rem;
+      font-weight: 800;
+      line-height: 1.1;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
     }
     .card-value {
       margin: 0;
-      font-size: 1.05rem;
+      font-size: 1.2rem;
+      line-height: 1.05;
       font-weight: 800;
-      letter-spacing: -0.01em;
-      color: #0d3a36;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .card-subvalue {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.25;
     }
     #totalKgBrought,
-    #totalAmount,
-    #totalPrefinance {
+    #totalAmount {
       color: var(--accent);
     }
     #totalKgBrought,
     #totalAmount {
       font-size: 1.22rem;
-    }
-    #totalBalance {
-      color: #c2410c;
     }
     .error {
       margin-top: 12px;
@@ -463,7 +471,7 @@ func Home() templ.Component {
     html.mobile-layout .cards {
       order: 2;
       margin-top: 8px;
-      grid-template-columns: repeat(2, minmax(130px, 1fr));
+      grid-template-columns: 1fr;
     }
     html.mobile-layout .community-picker {
       order: 3;
@@ -516,7 +524,6 @@ func Home() templ.Component {
         <div class="sidebar-actions">
           <a class="nav-link" href="/logs">Logs</a>
           <a class="nav-link" href="/recovery">Recovery</a>
-          <a class="nav-link" href="/analytics">Analytics</a>
         </div>
       </div>
     </aside>
@@ -527,7 +534,6 @@ func Home() templ.Component {
       <div class="main-mobile-actions" hidden>
         <a class="nav-link" href="/logs">Daily Logs</a>
         <a class="nav-link" href="/recovery">Recovery</a>
-        <a class="nav-link" href="/analytics">Analytics</a>
       </div>
        <div class="loading-indicator" role="status" aria-live="polite">
         <span class="spinner" aria-hidden="true"></span>
@@ -582,10 +588,17 @@ func Home() templ.Component {
         </div>
       </section>
 
-      <section class="cards">        <article class="card"><p class="card-label">Total Nuts (kg)</p><p class="card-value" id="totalKgBrought">0</p></article>
-        <article class="card"><p class="card-label">Nuts Value (GH₵)</p><p class="card-value" id="totalAmount">0</p></article>
-        <article class="card"><p class="card-label">Prefinance Given (GH₵)</p><p class="card-value" id="totalPrefinance">0</p></article>
-        <article class="card"><p class="card-label">Amount To Recover (GH₵)</p><p class="card-value" id="totalBalance">0</p></article>
+      <section class="cards">
+        <article class="card">
+          <p class="card-label">Total Nuts</p>
+          <p class="card-value" id="totalKgBrought">0</p>
+          <span class="card-subvalue">Total kilograms brought in</span>
+        </article>
+        <article class="card">
+          <p class="card-label">Nuts Value</p>
+          <p class="card-value" id="totalAmount">0</p>
+          <span class="card-subvalue">Gross value of nuts brought in</span>
+        </article>
       </section>
       <div class="community-picker mobile-community-picker" hidden>
         <div class="community-zone-picker">
@@ -657,8 +670,6 @@ func Home() templ.Component {
       const dailySyncs = document.getElementById("dailySyncs");
       const totalKgBrought = document.getElementById("totalKgBrought");
       const totalAmount = document.getElementById("totalAmount");
-      const totalPrefinance = document.getElementById("totalPrefinance");
-      const totalBalance = document.getElementById("totalBalance");
       const recoveryRateText = document.getElementById("recoveryRateText");
       let selectedZone = "General";
       const communitiesByZone = {};
@@ -673,6 +684,10 @@ func Home() templ.Component {
         return n.toLocaleString(undefined, { maximumFractionDigits: maxFractionDigits });
       }
 
+      function formatCurrency(value) {
+        return "GH\u20B5 " + formatNumber(value, 2);
+      }
+
       function setLoading() {
         dashboardMain.classList.add("loading");
         totalFarmers.textContent = "...";
@@ -680,8 +695,6 @@ func Home() templ.Component {
         dailySyncs.textContent = "...";
         totalKgBrought.textContent = "...";
         totalAmount.textContent = "...";
-        totalPrefinance.textContent = "...";
-        totalBalance.textContent = "...";
       }
 
       function setStats(data) {
@@ -690,10 +703,8 @@ func Home() templ.Component {
         totalFarmers.innerHTML = formatNumber(latestTotalFarmers, 0) + " <span class=\"metric-increment\">↑" + formatNumber(latestNewFarmers, 0) + "</span>";
         totalCommunities.textContent = formatNumber(data.totalCommunities, 0);
         dailySyncs.textContent = formatNumber(data.dailySyncs, 0);
-        totalKgBrought.textContent = formatNumber(data.totalKgBrought, 2);
-        totalAmount.textContent = formatNumber(data.totalAmount, 2);
-        totalPrefinance.textContent = formatNumber(data.totalPrefinance, 2);
-        totalBalance.textContent = formatNumber(data.totalBalance, 2);
+        totalKgBrought.textContent = formatNumber(data.totalKgBrought, 2) + " kg";
+        totalAmount.textContent = formatCurrency(data.totalAmount);
         renderCharts(data);
       }
 
