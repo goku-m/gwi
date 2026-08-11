@@ -18,9 +18,6 @@ func Analytics() templ.Component {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
-  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <style>
     :root {
       --bg: #eef8ee;
@@ -28,9 +25,9 @@ func Analytics() templ.Component {
       --surface-soft: #f8fbfa;
       --text: #102127;
       --muted: #56707d;
-      --accent: #0f766e;
-      --accent-soft: #e8f6f4;
-      --border: #15803d;
+      --accent: #166534;
+      --accent-soft: #eef8ee;
+      --border: #d7e0d8;
       --shadow: 0 12px 28px rgba(16, 33, 39, 0.08);
       --radius: 16px;
     }
@@ -73,21 +70,17 @@ func Analytics() templ.Component {
       border-top: 1px solid var(--border);
       margin-bottom: 10px;
     }
-    .brand {
-      margin: 6px 10px 18px;
-    }
+    .brand { margin: 6px 10px 18px; }
     .brand-logo {
       display: block;
       width: 100px;
       height: auto;
       max-width: 100%;
     }
-    .zone-list {
-      display: grid;
-      gap: 8px;
-    }
     .nav-link {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
       border: 1px solid var(--border);
       background: var(--surface);
@@ -97,269 +90,205 @@ func Analytics() templ.Component {
       text-decoration: none;
       font-size: 0.95rem;
       font-weight: 600;
+      text-align: center;
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
     .nav-link:hover {
-      border-color: var(--border);
+      border-color: var(--accent);
       transform: translateY(-1px);
     }
     .nav-link.active {
       background: var(--accent-soft);
-      border-color: var(--border);
-      color: #0a5d56;
-    }
-    .mobile-logs-link {
-      display: none;
-      margin-bottom: 10px;
-    }
-    .mobile-actions {
-      display: none;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .mobile-actions .nav-link {
-      width: auto;
-      flex: 1 1 0;
-    }
-    .main-mobile-brand {
-      display: none;
-    }
-    .main-mobile-actions {
-      display: none;
-    }
-    .zone-mobile-picker {
-      display: none;
-      margin: 0 10px 10px;
-    }
-    .community-zone-picker {
-      display: none;
-      gap: 6px;
-    }
-    .zone-mobile-select {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: var(--surface-soft);
-      color: var(--text);
-      font-size: 0.92rem;
-      font-weight: 600;
-    }
-    .zone-btn {
-      width: 100%;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 11px 12px;
-      text-align: left;
-      color: var(--text);
-      cursor: pointer;
-      font-size: 0.95rem;
-      font-weight: 600;
-      transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
-    }
-    .zone-btn:hover { border-color: var(--border); transform: translateY(-1px); }
-    .zone-btn.active {
-      background: var(--accent-soft);
-      border-color: var(--border);
-      color: #0a5d56;
-      box-shadow: 0 6px 14px rgba(15, 118, 110, 0.12);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 800;
     }
     .main {
+      min-width: 0;
       padding: 24px;
-      max-width: 1280px;
-      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .main-mobile-brand,
+    .main-mobile-actions {
+      display: none;
     }
     .header {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 8px 12px;
+      padding: 14px 16px;
       box-shadow: var(--shadow);
-      margin-bottom: 10px;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      gap: 8px;
+      gap: 12px;
     }
     .header-left { min-width: 0; }
     .title {
       margin: 0;
-      font-size: clamp(0.98rem, 0.88rem + 0.7vw, 1.35rem);
-      line-height: 1.08;
+      font-size: clamp(1.05rem, 0.92rem + 0.8vw, 1.55rem);
+      line-height: 1.12;
       font-weight: 800;
       letter-spacing: -0.01em;
     }
     .subtitle {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      min-height: 0.9rem;
+      margin-top: 4px;
       display: flex;
       flex-wrap: wrap;
-      align-items: baseline;
       gap: 4px;
+      align-items: baseline;
     }
-    .subtitle-syncs {
-      color: #0a5d56;
-      font-size: 0.76rem;
-      font-weight: 700;
-    }
-    .community-picker {
-      min-width: 220px;
-      display: grid;
-      gap: 6px;
-    }
-    .community-label {
-      color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-    .community-input {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 7px 9px;
-      background: var(--surface-soft);
-      color: var(--text);
-      font-size: 0.86rem;
-    }
-    .community-input:focus {
-      outline: none;
-      border-color: var(--border);
-      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.25);
-    }
-    .recovery-dashboard {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-    .dashboard-head {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .dashboard-kicker {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .dashboard-title {
-      margin: 3px 0 0;
-      font-size: 1rem;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-    }
-    .dashboard-note {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.86rem;
-      font-weight: 600;
-    }
-    .dashboard-grid {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-    .dashboard-card {
-      background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 12px;
-      min-height: 108px;
-      display: grid;
-      gap: 6px;
-    }
-    .dashboard-label {
-      color: var(--muted);
-      font-size: 0.76rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .dashboard-value {
-      margin: 0;
-      font-size: 1.2rem;
-      line-height: 1.05;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-    .dashboard-value.good { color: #0a5d56; }
-    .dashboard-value.warn { color: #b45309; }
-    .dashboard-value.accent { color: #0f766e; }
-    .dashboard-subvalue {
+    .subtitle-text {
       color: var(--muted);
       font-size: 0.82rem;
-      line-height: 1.25;
+      font-weight: 700;
     }
-    .dashboard-progress {
-      height: 9px;
-      background: #e7efed;
+    .summary-pill {
+      align-self: center;
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
       border-radius: 999px;
-      overflow: hidden;
-      margin-top: 2px;
-    }
-    .dashboard-progress span {
-      display: block;
-      height: 100%;
-      width: 0%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #0f766e 0%, #10b981 100%);
-      transition: width 220ms ease;
+      padding: 8px 12px;
+      color: var(--accent);
+      font-size: 0.84rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
     .loading-indicator {
       display: none;
       align-items: center;
-      gap: 8px;
-      margin: 10px 0 14px;
+      gap: 10px;
       color: var(--muted);
       font-size: 0.9rem;
       font-weight: 600;
     }
-    .loading .loading-indicator {
-      display: flex;
-    }
     .spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid #15803d;
+      border: 2px solid rgba(22, 101, 52, 0.18);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 700ms linear infinite;
+      flex-shrink: 0;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 18px rgba(16, 33, 39, 0.04);
+      padding: 14px;
+      overflow: hidden;
     }
-    @media (prefers-reduced-motion: reduce) {
-      .zone-btn, .card { transition: none; }
+    .table-head {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .table-head h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .table-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 420px;
+    }
+    th, td {
+      padding: 11px 10px;
+      border-bottom: 1px solid rgba(215, 224, 216, 0.8);
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    td {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+    .zone-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(22, 101, 52, 0.08);
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.84rem;
+    }
+    .rate-cell {
+      display: grid;
+      gap: 6px;
+    }
+    .rate-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: #e7efed;
+      overflow: hidden;
+    }
+    .rate-bar span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #166534 0%, #22c55e 100%);
+    }
+    .error {
+      border: 1px solid rgba(185, 28, 28, 0.22);
+      background: rgba(185, 28, 28, 0.06);
+      color: #9f1239;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: none;
     }
     @media (pointer: coarse) and (hover: none) {
-      .layout { grid-template-columns: 1fr; }
-      .main {
-        display: flex;
-        flex-direction: column;
+      .layout {
+        grid-template-columns: 1fr;
       }
       .sidebar {
         display: none;
       }
-      .main-mobile-brand {
+      .main {
+        padding: 16px 12px 20px;
+      }
+      .main-mobile-brand,
+      .main-mobile-actions {
         display: flex;
+      }
+      .main-mobile-brand {
         align-items: center;
         justify-content: flex-start;
-        margin-bottom: 8px;
       }
       .main-mobile-brand .brand-logo {
         width: 92px;
       }
       .main-mobile-actions {
-        display: flex;
         gap: 6px;
         margin-bottom: 8px;
       }
@@ -369,32 +298,14 @@ func Analytics() templ.Component {
         padding: 7px 9px;
         font-size: 0.82rem;
       }
-      .zone-list {
-        display: none;
-      }
       .header {
-        display: flex;
+        padding: 10px 12px;
         flex-direction: column;
         align-items: stretch;
-        gap: 6px;
-        padding: 8px 10px;
       }
-      .header-left,
-      .community-picker {
-        width: 100%;
-        min-width: 0;
+      .summary-pill {
+        align-self: flex-start;
       }
-      .community-picker {
-        margin-top: 0;
-      }
-      .dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .community-zone-picker { display: grid; }
-    }
-    @media (max-width: 560px) {
-      .main { padding: 14px; }
-      .title { font-size: 0.98rem; }
-      .main-mobile-brand .brand-logo { width: 84px; }
-      .dashboard-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -405,219 +316,151 @@ func Analytics() templ.Component {
         <div class="brand">
           <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
         </div>
-        <nav class="zone-list" id="zoneList">
-          <button class="zone-btn active" data-zone="General">General</button>
-          <button class="zone-btn" data-zone="Wa">Wa</button>
-          <button class="zone-btn" data-zone="Yendi">Yendi</button>
-          <button class="zone-btn" data-zone="Tamale">Tamale</button>
-          <button class="zone-btn" data-zone="Sandema">Sandema</button>
-          <button class="zone-btn" data-zone="Garu">Garu</button>
-          <button class="zone-btn" data-zone="Langbinsi">Langbinsi</button>
-          <button class="zone-btn" data-zone="Napkaduri">Napkanduri</button>
-        </nav>
-      </div>
-      <div class="sidebar-bottom">
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-actions">
+        <nav class="sidebar-actions" aria-label="Primary">
           <a class="nav-link" href="/">Home</a>
-          <a class="nav-link" href="/logs">Logs</a>
-        </div>
+          <a class="nav-link" href="/logs">Daily Logs</a>
+          <a class="nav-link" href="/recovery">Recovery</a>
+          <a class="nav-link active" href="/analytics">Analytics</a>
+        </nav>
       </div>
     </aside>
     <main class="main" id="analyticsMain">
-      <div class="main-mobile-brand">
+      <div class="main-mobile-brand" hidden>
         <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
       </div>
-      <div class="main-mobile-actions">
+      <div class="main-mobile-actions" hidden>
         <a class="nav-link" href="/">Home</a>
         <a class="nav-link" href="/logs">Daily Logs</a>
+        <a class="nav-link" href="/recovery">Recovery</a>
         <a class="nav-link active" href="/analytics">Analytics</a>
+      </div>
+      <div class="loading-indicator" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Loading zone table...</span>
       </div>
       <section class="header">
         <div class="header-left">
-          <h1 class="title" id="selectedZoneTitle">Analytics</h1>
+          <h1 class="title">Analytics</h1>
           <div class="subtitle">
-            <span id="subtitleText">Overall zone analytics</span>
-            <span class="subtitle-syncs" id="subtitleSyncs">Total Syncs: <span id="totalSyncs">0</span></span>
+            <span class="subtitle-text">Zone performance overview</span>
           </div>
         </div>
-        <div class="community-picker">
-          <div class="community-zone-picker">
-            <label class="community-label" for="zoneMobileSelect">Select Zone</label>
-            <select id="zoneMobileSelect" class="zone-mobile-select" aria-label="Zone select">
-              <option value="General">General</option>
-              <option value="Wa">Wa</option>
-              <option value="Yendi">Yendi</option>
-              <option value="Tamale">Tamale</option>
-              <option value="Sandema">Sandema</option>
-              <option value="Garu">Garu</option>
-              <option value="Langbinsi">Langbinsi</option>
-              <option value="Napkaduri">Napkanduri</option>
-            </select>
-          </div>
-        </div>
+       
       </section>
-      <div class="loading-indicator" role="status" aria-live="polite">
-        <span class="spinner" aria-hidden="true"></span>
-        <span>Fetching latest analytics...</span>
-      </div>
-      <section class="recovery-dashboard">
-     
-        <div class="dashboard-grid">
-          <article class="dashboard-card">
-            <span class="dashboard-label">Recovery Rate</span>
-            <p class="dashboard-value accent" id="recoveryRateValue">0%</p>
-           
-            <div class="dashboard-progress" aria-hidden="true"><span id="recoveryProgressBar"></span></div>
-          </article>
-          <article class="dashboard-card">
-            <span class="dashboard-label">Recovered</span>
-            <p class="dashboard-value good" id="recoveredPrefinance">GH&#8373; 0.00</p>
-            <span class="dashboard-subvalue">Prefinance already recovered</span>
-          </article>
-          <article class="dashboard-card">
-            <span class="dashboard-label">Outstanding</span>
-            <p class="dashboard-value warn" id="outstandingBalance">GH&#8373; 0.00</p>
-            <span class="dashboard-subvalue">Amount still to recover</span>
-          </article>
-          <article class="dashboard-card">
-            <span class="dashboard-label">Total Prefinance</span>
-            <p class="dashboard-value" id="totalPrefinanceValue">GH&#8373; 0.00</p>
-            <span class="dashboard-subvalue">Current zone total</span>
-          </article>
+      <div class="error" id="errorBox"></div>
+      <section class="table-card" aria-label="Zone analytics table">
+        <div class="table-head">
+          <h2>Zone Recovery Table</h2>
+          <p>Compare each zone by total nuts and recovery rate.</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Zone</th>
+                <th>Total Nuts</th>
+                <th>Recovery Rate</th>
+              </tr>
+            </thead>
+            <tbody id="zoneRows"></tbody>
+          </table>
         </div>
       </section>
     </main>
   </div>
   <script>
-    (function () {
-      const zoneButtons = Array.from(document.querySelectorAll(".zone-btn"));
-      const selectedZoneTitle = document.getElementById("selectedZoneTitle");
-      const subtitleText = document.getElementById("subtitleText");
-      const subtitleSyncs = document.getElementById("subtitleSyncs");
-      const totalSyncs = document.getElementById("totalSyncs");
-      const recoveryRateValue = document.getElementById("recoveryRateValue");
-      const recoveryRateSummary = document.getElementById("recoveryRateSummary");
-      const recoveryProgressBar = document.getElementById("recoveryProgressBar");
-      const recoveredPrefinance = document.getElementById("recoveredPrefinance");
-      const outstandingBalance = document.getElementById("outstandingBalance");
-      const totalPrefinanceValue = document.getElementById("totalPrefinanceValue");
-      const analyticsMain = document.getElementById("analyticsMain");
-      const zoneMobileSelect = document.getElementById("zoneMobileSelect");
+    (() => {
+      const zones = ["Wa", "Yendi", "Tamale", "Sandema", "Garu", "Langbinsi", "Napkaduri"];
+      const loadingIndicator = document.querySelector(".loading-indicator");
+      const errorBox = document.getElementById("errorBox");
+      const zoneRows = document.getElementById("zoneRows");
+      const zoneCount = document.getElementById("zoneCount");
 
-      let selectedZone = "General";
-      let activeRequestController = null;
+      const numberFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 
-      function formatNumber(value, maxFractionDigits) {
-        const n = Number(value || 0);
-        return n.toLocaleString(undefined, { maximumFractionDigits: maxFractionDigits });
+      function formatNumber(value) {
+        return numberFormatter.format(Number(value || 0));
       }
 
-      function formatCurrency(value) {
-        return "GH\u20B5 " + formatNumber(value, 2);
+      function recoveryRate(item) {
+        const prefinance = Number(item.totalPrefinance || 0);
+        const balance = Number(item.totalBalance || 0);
+        if (prefinance <= 0) return 0;
+        return Math.max(((prefinance - balance) / prefinance) * 100, 0);
       }
 
-      function setLoading() {
-        analyticsMain.classList.add("loading");
-        totalSyncs.textContent = "...";
-        if (recoveryRateValue) recoveryRateValue.textContent = "...";
-        if (recoveryRateSummary) recoveryRateSummary.textContent = "Loading recovery snapshot...";
-        if (recoveryProgressBar) recoveryProgressBar.style.width = "0%";
-        if (recoveredPrefinance) recoveredPrefinance.textContent = "...";
-        if (outstandingBalance) outstandingBalance.textContent = "...";
-        if (totalPrefinanceValue) totalPrefinanceValue.textContent = "...";
+      function setLoading(isLoading) {
+        loadingIndicator.style.display = isLoading ? "flex" : "none";
       }
 
-      function renderRecoveryDashboard(data) {
-        const prefinance = Number(data.totalPrefinance || 0);
-        const balance = Number(data.totalBalance || 0);
-        const recoveredPrefinanceValue = Math.max(0, prefinance - balance);
-        const recoveryPercent = prefinance > 0 ? (recoveredPrefinanceValue / prefinance) * 100 : 0;
-
-        if (recoveryRateValue) {
-          recoveryRateValue.textContent = recoveryPercent.toFixed(1) + "%";
+      function setError(message) {
+        if (!message) {
+          errorBox.style.display = "none";
+          errorBox.textContent = "";
+          return;
         }
-        if (recoveryRateSummary) {
-          recoveryRateSummary.textContent = formatCurrency(recoveredPrefinanceValue) + " recovered of " + formatCurrency(prefinance);
-        }
-        if (recoveryProgressBar) {
-          recoveryProgressBar.style.width = Math.max(0, Math.min(100, recoveryPercent)).toFixed(1) + "%";
-        }
-        if (recoveredPrefinance) recoveredPrefinance.textContent = formatCurrency(recoveredPrefinanceValue);
-        if (outstandingBalance) outstandingBalance.textContent = formatCurrency(balance);
-        if (totalPrefinanceValue) totalPrefinanceValue.textContent = formatCurrency(prefinance);
+        errorBox.textContent = message;
+        errorBox.style.display = "block";
       }
 
-      async function fetchJson(route, signal) {
-        const response = await fetch(route, { signal: signal });
+      function renderRows(rows) {
+        zoneRows.innerHTML = rows.map(function (row) {
+          const rate = recoveryRate(row);
+          return [
+            "<tr>",
+            "<td><span class=\"zone-pill\">" + row.zoneName + "</span></td>",
+            "<td><strong>" + formatNumber(row.totalKgBrought) + "</strong> kg</td>",
+            "<td><div class=\"rate-cell\"><strong>" + rate.toFixed(1) + "%</strong>",
+            "<div class=\"rate-bar\" aria-hidden=\"true\"><span style=\"width:" + Math.min(rate, 100) + "%\"></span></div>",
+            "</div></td>",
+            "</tr>"
+          ].join("");
+        }).join("");
+      }
+
+      async function fetchZoneOverview(zone) {
+        const response = await fetch("/api/zones/" + encodeURIComponent(zone) + "/farmers/overview", {
+          headers: { "Accept": "application/json" }
+        });
         if (!response.ok) {
-          throw new Error("Request failed with status " + response.status);
+          throw new Error("Failed to load " + zone);
         }
-
-        return response.json();
+        const data = await response.json();
+        return { ...data, zoneName: zone };
       }
 
-      async function loadZoneAnalytics(zone) {
-        if (activeRequestController) {
-          activeRequestController.abort();
-        }
-
-        activeRequestController = new AbortController();
-        const controller = activeRequestController;
-
-        selectedZoneTitle.textContent = zone;
-        subtitleText.textContent = "Overall zone analytics";
-        subtitleSyncs.style.display = "inline-flex";
-        setLoading();
-
-        const overviewRoute = zone === "General"
-          ? "/api/farmers/overview"
-          : "/api/zones/" + encodeURIComponent(zone) + "/farmers/overview";
-
+      async function loadTable() {
         try {
-          const data = await fetchJson(overviewRoute, controller.signal);
+          setLoading(true);
+          setError("");
 
-          if (controller.signal.aborted) {
-            return;
+          const settled = await Promise.allSettled(zones.map(fetchZoneOverview));
+          const rows = settled
+            .filter((item) => item.status === "fulfilled")
+            .map((item) => item.value);
+
+          if (!rows.length) {
+            throw new Error("No zone analytics data could be loaded.");
           }
 
-          totalSyncs.textContent = formatNumber(data.totalSyncs, 0);
-          renderRecoveryDashboard(data);
-          analyticsMain.classList.remove("loading");
+          const sortedRows = [...rows].sort((a, b) => {
+            const rateDiff = recoveryRate(b) - recoveryRate(a);
+            if (rateDiff !== 0) return rateDiff;
+            return Number(b.totalKgBrought || 0) - Number(a.totalKgBrought || 0);
+          });
+
+          zoneCount.textContent = rows.length + " zones compared";
+          renderRows(sortedRows);
         } catch (err) {
-          if (err.name === "AbortError") {
-            return;
-          }
-          analyticsMain.classList.remove("loading");
+          setError(err instanceof Error ? err.message : "Failed to build zone table.");
         } finally {
-          if (activeRequestController === controller) {
-            activeRequestController = null;
-          }
+          setLoading(false);
         }
       }
 
-      zoneButtons.forEach(function (button) {
-        button.addEventListener("click", function () {
-          zoneButtons.forEach(function (b) { b.classList.remove("active"); });
-          button.classList.add("active");
-          selectedZone = button.dataset.zone;
-          zoneMobileSelect.value = selectedZone;
-          loadZoneAnalytics(selectedZone);
-        });
-      });
-
-      zoneMobileSelect.addEventListener("change", function () {
-        const zone = zoneMobileSelect.value;
-        selectedZone = zone;
-        zoneButtons.forEach(function (b) {
-          b.classList.toggle("active", b.dataset.zone === zone);
-        });
-        loadZoneAnalytics(selectedZone);
-      });
-      loadZoneAnalytics("General");
+      loadTable();
     })();
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.js"></script>
 </body>
 </html>`)
 		return err

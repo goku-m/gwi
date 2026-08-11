@@ -37,9 +37,9 @@ func Home() templ.Component {
       --surface-soft: #f8fbfa;
       --text: #102127;
       --muted: #56707d;
-      --accent: #0f766e;
-      --accent-soft: #e8f6f4;
-      --border: #15803d;
+      --accent: #166534;
+      --accent-soft: #eef8ee;
+      --border: #d7e0d8;
       --shadow: 0 12px 28px rgba(16, 33, 39, 0.08);
       --radius: 16px;
     }
@@ -96,7 +96,9 @@ func Home() templ.Component {
       gap: 8px;
     }
     .nav-link {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
       border: 1px solid var(--border);
       background: var(--surface);
@@ -106,10 +108,11 @@ func Home() templ.Component {
       text-decoration: none;
       font-size: 0.95rem;
       font-weight: 600;
+      text-align: center;
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
     .nav-link:hover {
-      border-color: var(--border);
+      border-color: var(--accent);
       transform: translateY(-1px);
     }
     .mobile-logs-link {
@@ -150,28 +153,32 @@ func Home() templ.Component {
       font-weight: 600;
     }
     .zone-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
       border: 1px solid var(--border);
       background: var(--surface);
       border-radius: 12px;
       padding: 11px 12px;
-      text-align: left;
+      text-align: center;
       color: var(--text);
       cursor: pointer;
       font-size: 0.95rem;
       font-weight: 600;
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
-    .zone-btn:hover { border-color: var(--border); transform: translateY(-1px); }
+    .zone-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
     .zone-btn:focus-visible {
-      outline: 2px solid #78c9bf;
+      outline: 2px solid rgba(22, 101, 52, 0.35);
       outline-offset: 1px;
     }
     .zone-btn.active {
       background: var(--accent-soft);
-      border-color: var(--border);
-      color: #0a5d56;
-      box-shadow: 0 6px 14px rgba(15, 118, 110, 0.12);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 800;
+      box-shadow: 0 6px 14px rgba(22, 101, 52, 0.12);
     }
     .main {
       padding: 24px;
@@ -209,7 +216,7 @@ func Home() templ.Component {
       gap: 6px;
     }
     .subtitle-syncs {
-      color: #0a5d56;
+      color: var(--accent);
       font-size: 0.82rem;
       font-weight: 700;
     }
@@ -242,7 +249,7 @@ func Home() templ.Component {
       color: #0d3a36;
     }
     .metric-increment {
-      color: #15803d;
+      color: var(--accent);
       font-weight: 800;
       margin-left: 6px;
     }
@@ -272,8 +279,8 @@ func Home() templ.Component {
     }
     .community-input:focus {
       outline: none;
-      border-color: var(--border);
-      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.25);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.18);
     }
     .community-select {
       display: none;
@@ -324,10 +331,14 @@ func Home() templ.Component {
     #totalKgBrought,
     #totalAmount,
     #totalPrefinance {
-      color: #15803d;
+      color: var(--accent);
+    }
+    #totalKgBrought,
+    #totalAmount {
+      font-size: 1.22rem;
     }
     #totalBalance {
-      color: #b91c1c;
+      color: #c2410c;
     }
     .error {
       margin-top: 12px;
@@ -359,7 +370,7 @@ func Home() templ.Component {
       margin: -2px 0 10px;
       font-size: 0.86rem;
       font-weight: 700;
-      color: #0a5d56;
+      color: var(--accent);
     }
     .loading .card-value {
       color: #8ca2ad;
@@ -379,7 +390,7 @@ func Home() templ.Component {
     .spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid #15803d;
+      border: 2px solid rgba(22, 101, 52, 0.18);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 700ms linear infinite;
@@ -504,6 +515,7 @@ func Home() templ.Component {
         <div class="sidebar-divider"></div>
         <div class="sidebar-actions">
           <a class="nav-link" href="/logs">Logs</a>
+          <a class="nav-link" href="/recovery">Recovery</a>
           <a class="nav-link" href="/analytics">Analytics</a>
         </div>
       </div>
@@ -514,6 +526,7 @@ func Home() templ.Component {
       </div>
       <div class="main-mobile-actions" hidden>
         <a class="nav-link" href="/logs">Daily Logs</a>
+        <a class="nav-link" href="/recovery">Recovery</a>
         <a class="nav-link" href="/analytics">Analytics</a>
       </div>
        <div class="loading-indicator" role="status" aria-live="polite">
@@ -712,7 +725,7 @@ func Home() templ.Component {
           chart: { type: "pie", height: 280 },
           series: [recoveredPrefinance, unpaidPrefinance],
           labels: ["Recovered Prefinance", "Unpaid Prefinance"],
-          colors: ["#0f766e", "#f59e0b"],
+          colors: ["#166534", "#84cc16"],
           legend: { position: "bottom" }
         };
 
@@ -720,7 +733,7 @@ func Home() templ.Component {
           chart: { type: "donut", height: 280 },
           series: [amount, prefinance, balance],
           labels: ["Total Amount", "Prefinance", "Balance"],
-          colors: ["#0f766e", "#0ea5e9", "#f59e0b"],
+          colors: ["#166534", "#22c55e", "#f59e0b"],
           legend: { position: "bottom" }
         };
 

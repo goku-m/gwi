@@ -27,9 +27,9 @@ func Logs() templ.Component {
       --surface-soft: #f8fbfa;
       --text: #102127;
       --muted: #56707d;
-      --accent: #0f766e;
-      --accent-soft: #e8f6f4;
-      --border: #15803d;
+      --accent: #166534;
+      --accent-soft: #eef8ee;
+      --border: #d7e0d8;
       --shadow: 0 12px 28px rgba(16, 33, 39, 0.08);
       --radius: 16px;
     }
@@ -93,13 +93,14 @@ func Logs() templ.Component {
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
     .nav-link:hover {
-      border-color: var(--border);
+      border-color: var(--accent);
       transform: translateY(-1px);
     }
     .nav-link.active {
       background: var(--accent-soft);
-      border-color: var(--border);
-      color: #0a5d56;
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 800;
     }
     .header-actions.mobile {
       display: none;
@@ -151,8 +152,8 @@ func Logs() templ.Component {
     }
     .date-input:focus {
       outline: none;
-      border-color: var(--border);
-      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.25);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.18);
     }
     h1 {
       margin: 0 0 10px;
@@ -186,11 +187,11 @@ func Logs() templ.Component {
       font-weight: 700;
     }
     .log-datetime {
-      color: #15803d;
+      color: var(--accent);
       font-weight: 600;
     }
     a {
-      color: #0f766e;
+      color: var(--accent);
       text-decoration: none;
       font-weight: 600;
     }
@@ -251,6 +252,7 @@ func Logs() templ.Component {
     <div class="main-mobile-actions">
       <a class="nav-link" href="/">Home</a>
       <a class="nav-link active" href="/logs">Daily Logs</a>
+      <a class="nav-link" href="/recovery">Recovery</a>
       <a class="nav-link" href="/analytics">Analytics</a>
     </div>
     <header class="header">
@@ -262,6 +264,7 @@ func Logs() templ.Component {
         <nav class="header-actions desktop" aria-label="Primary">
           <a class="nav-link" href="/">Home</a>
           <a class="nav-link active" href="/logs">Daily Logs</a>
+          <a class="nav-link" href="/recovery">Recovery</a>
           <a class="nav-link" href="/analytics">Analytics</a>
         </nav>
       </div>
