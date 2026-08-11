@@ -15,20 +15,106 @@ func Logs() templ.Component {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Logs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <style>
+    :root {
+      --bg: #f3f7f6;
+      --surface: #ffffff;
+      --surface-soft: #f8fbfa;
+      --text: #102127;
+      --muted: #56707d;
+      --accent: #0f766e;
+      --accent-soft: #e8f6f4;
+      --border: #d8e5e3;
+      --shadow: 0 12px 28px rgba(16, 33, 39, 0.08);
+      --radius: 16px;
+    }
     * {
       box-sizing: border-box;
     }
     body {
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: #f5f7f9;
-      color: #102127;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 12%, #dff2ef 0%, transparent 40%),
+        linear-gradient(180deg, #f9fcfb 0%, var(--bg) 100%);
     }
     .wrap {
       max-width: 960px;
       margin: 0 auto;
       padding: 24px 16px;
+    }
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 7px 10px;
+      margin-bottom: 8px;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .header-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .header-subtitle {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 7px 9px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 600;
+      transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
+    }
+    .nav-link:hover {
+      border-color: #a7cfc8;
+      transform: translateY(-1px);
+    }
+    .nav-link.active {
+      background: var(--accent-soft);
+      border-color: #7dcfc5;
+      color: #0a5d56;
+    }
+    .header-actions.mobile {
+      display: none;
+      width: 100%;
+    }
+    .header-actions.mobile .nav-link {
+      flex: 1 1 0;
+    }
+    .main-mobile-brand {
+      display: none;
+    }
+    .main-mobile-actions {
+      display: none;
     }
     .card {
       background: #fff;
@@ -120,6 +206,35 @@ func Logs() templ.Component {
       .card {
         padding: 16px;
       }
+      .header {
+        padding: 7px 8px;
+      }
+      .header-actions.desktop {
+        display: none;
+      }
+      .header-actions.mobile {
+        display: flex;
+      }
+      .main-mobile-brand {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 8px;
+      }
+      .main-mobile-brand .brand-logo {
+        width: 92px;
+      }
+      .main-mobile-actions {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .main-mobile-actions .nav-link {
+        width: auto;
+        flex: 1 1 0;
+        padding: 7px 9px;
+        font-size: 0.82rem;
+      }
       .toolbar {
         align-items: stretch;
       }
@@ -132,6 +247,28 @@ func Logs() templ.Component {
 </head>
 <body>
   <main class="wrap">
+    <div class="main-mobile-brand">
+      <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
+    </div>
+    <div class="main-mobile-actions">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link active" href="/logs">Daily Logs</a>
+      <a class="nav-link" href="/analytics">Analytics</a>
+    </div>
+    <header class="header">
+      <div class="header-row">
+        <div>
+          <h1 class="header-title">Logs</h1>
+          <p class="header-subtitle">Browse daily farmer activity.</p>
+        </div>
+        <nav class="header-actions desktop" aria-label="Primary">
+          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link active" href="/logs">Daily Logs</a>
+          <a class="nav-link" href="/analytics">Analytics</a>
+        </nav>
+      </div>
+  
+    </header>
     <section class="card">
       <div class="toolbar">
         <div class="date-group">
@@ -142,7 +279,6 @@ func Logs() templ.Component {
       <h1>Logs</h1>
       <p class="status" id="logStatus">Choose a date to load logs.</p>
       <ul class="names-list" id="namesList"></ul>
-      <a href="/">Back to dashboard</a>
     </section>
   </main>
   <script>

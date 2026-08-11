@@ -27,3 +27,9 @@ func (h *PageHandler) Logs(c echo.Context) error {
 	c.Response().WriteHeader(http.StatusOK)
 	return pages.Logs().Render(c.Request().Context(), c.Response().Writer)
 }
+
+func (h *PageHandler) Analytics(c echo.Context) error {
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTMLCharsetUTF8)
+	c.Response().WriteHeader(http.StatusOK)
+	return pages.Analytics().Render(c.Request().Context(), c.Response().Writer)
+}

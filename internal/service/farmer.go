@@ -15,7 +15,7 @@ import (
 	"github.com/goku-m/gwi/internal/server"
 )
 
-const maxSyncCreatedFarmers = 200
+const maxSyncCreatedFarmers = 1000
 
 type FarmerService struct {
 	server     *server.Server

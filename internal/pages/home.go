@@ -68,6 +68,10 @@ func Home() templ.Component {
       margin-top: auto;
       padding-top: 14px;
     }
+    .sidebar-actions {
+      display: grid;
+      gap: 8px;
+    }
     .sidebar-divider {
       border-top: 1px solid var(--border);
       margin-bottom: 10px;
@@ -106,9 +110,28 @@ func Home() templ.Component {
       display: none;
       margin-bottom: 10px;
     }
+    .mobile-actions {
+      display: none;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .mobile-actions .nav-link {
+      width: auto;
+      flex: 1 1 0;
+    }
+    .main-mobile-brand {
+      display: none;
+    }
+    .mobile-community-picker {
+      display: none;
+    }
     .zone-mobile-picker {
       display: none;
       margin: 0 10px 10px;
+    }
+    .community-zone-picker {
+      display: none;
+      gap: 6px;
     }
     .zone-mobile-select {
       width: 100%;
@@ -153,53 +176,62 @@ func Home() templ.Component {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px 20px;
+      padding: 11px 14px;
       box-shadow: var(--shadow);
-      margin-bottom: 18px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 12px;
     }
     .header-left { min-width: 0; }
     .title {
       margin: 0;
-      font-size: clamp(1.25rem, 1rem + 1vw, 1.8rem);
-      line-height: 1.18;
+      font-size: clamp(1.05rem, 0.92rem + 0.8vw, 1.55rem);
+      line-height: 1.12;
       font-weight: 800;
       letter-spacing: -0.01em;
     }
     .subtitle {
-      margin-top: 7px;
+      margin-top: 4px;
       color: var(--muted);
-      font-size: 0.93rem;
-      min-height: 1.2rem;
-    }
-    .header-metrics {
-      margin-top: 12px;
+      font-size: 0.84rem;
+      min-height: 1rem;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .subtitle-syncs {
+      color: #0a5d56;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .header-metrics {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .header-metric {
       background: var(--surface-soft);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 8px 10px;
-      min-width: 138px;
+      padding: 6px 8px;
+      min-width: 122px;
     }
     .header-metric-label {
       display: block;
       color: var(--muted);
-      font-size: 0.74rem;
+      font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     .header-metric-value {
       margin: 0;
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 800;
       color: #0d3a36;
     }
@@ -262,32 +294,34 @@ func Home() templ.Component {
       grid-template-columns: repeat(2, minmax(190px, 1fr));
     }
     .card {
-      background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
+      background: var(--surface-soft);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-      min-height: 116px;
-      transition: transform 140ms ease, box-shadow 140ms ease;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 30px rgba(16, 33, 39, 0.11);
+      border-radius: 12px;
+      padding: 8px 10px;
     }
     .card-label {
-      margin: 0 0 10px;
+      display: block;
+      margin: 0 0 4px;
       color: var(--muted);
-      font-size: 0.84rem;
+      font-size: 0.74rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
     .card-value {
       margin: 0;
-      font-size: clamp(1.14rem, 1rem + 0.8vw, 1.7rem);
+      font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: -0.01em;
       color: #0d3a36;
+    }
+    #totalKgBrought,
+    #totalAmount,
+    #totalPrefinance {
+      color: #15803d;
+    }
+    #totalBalance {
+      color: #b91c1c;
     }
     .error {
       margin-top: 12px;
@@ -352,35 +386,96 @@ func Home() templ.Component {
     }
     @media (max-width: 960px) {
       .layout { grid-template-columns: 1fr; }
-      .sidebar {
-        height: auto;
-        position: static;
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
+      .main {
+        display: flex;
+        flex-direction: column;
       }
-      .sidebar-bottom {
+      .sidebar {
         display: none;
       }
-      .mobile-logs-link {
-        display: block;
+      .main-mobile-brand {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 8px;
+      }
+      .main-mobile-brand .brand-logo {
+        width: 92px;
+      }
+      .main-mobile-actions {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .main-mobile-actions .nav-link {
+        width: auto;
+        flex: 1 1 0;
+        padding: 7px 9px;
+        font-size: 0.82rem;
+      }
+      .mobile-actions .nav-link {
+        width: auto;
+        flex: 0 1 auto;
+        padding: 7px 9px;
+        font-size: 0.82rem;
       }
       .zone-list {
         display: none;
       }
-      .zone-mobile-picker { display: block; }
-      .cards { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
-      .header { align-items: flex-start; flex-direction: column; }
-      .community-picker { width: 100%; min-width: 0; }
+      .header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px 12px;
+      }
+      .header-left,
+      .cards,
+      .community-picker {
+        width: 100%;
+        min-width: 0;
+      }
+      .header-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .header-metric {
+        min-width: 0;
+        padding: 5px 7px;
+      }
+      .cards {
+        order: 2;
+        margin-top: 8px;
+        grid-template-columns: repeat(2, minmax(130px, 1fr));
+      }
+      .community-picker {
+        order: 3;
+        margin-top: 0;
+      }
+      .header .community-picker {
+        display: none;
+      }
+      .mobile-community-picker {
+        display: grid;
+        gap: 6px;
+        margin-top: 8px;
+        order: 4;
+        background: var(--surface-soft);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+      .community-zone-picker { display: grid; }
       .community-input { display: none; }
       .community-select { display: block; }
       .filters-row { grid-template-columns: 1fr 1fr; }
-      .charts { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
       .main { padding: 14px; }
-      .cards { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
       .title { font-size: 1.2rem; }
-      .brand-logo { width: 108px; }
+      .main-mobile-brand .brand-logo { width: 84px; }
     }
   </style>
 </head>
@@ -390,20 +485,6 @@ func Home() templ.Component {
       <div class="sidebar-top">
         <div class="brand">
           <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
-        </div>
-        <div class="zone-mobile-picker">
-          <a class="nav-link mobile-logs-link" href="/logs">Daily Logs</a>
-          <label class="community-label" for="zoneMobileSelect">Select Zone</label>
-          <select id="zoneMobileSelect" class="zone-mobile-select" aria-label="Zone select">
-            <option value="General">General</option>
-            <option value="Wa">Wa</option>
-            <option value="Yendi">Yendi</option>
-            <option value="Tamale">Tamale</option>
-            <option value="Sandema">Sandema</option>
-            <option value="Garu">Garu</option>
-            <option value="Langbinsi">Langbinsi</option>
-            <option value="Napkaduri">Napkanduri</option>
-          </select>
         </div>
         <nav class="zone-list" id="zoneList">
           <button class="zone-btn active" data-zone="General">General</button>
@@ -418,14 +499,31 @@ func Home() templ.Component {
       </div>
       <div class="sidebar-bottom">
         <div class="sidebar-divider"></div>
-        <a class="nav-link" href="/logs">Logs</a>
+        <div class="sidebar-actions">
+          <a class="nav-link" href="/logs">Logs</a>
+          <a class="nav-link" href="/analytics">Analytics</a>
+        </div>
       </div>
     </aside>
     <main class="main" id="dashboardMain">
+      <div class="main-mobile-brand">
+        <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
+      </div>
+      <div class="main-mobile-actions">
+        <a class="nav-link" href="/logs">Daily Logs</a>
+        <a class="nav-link" href="/analytics">Analytics</a>
+      </div>
+       <div class="loading-indicator" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>Fetching latest data...</span>
+      </div>
       <section class="header">
         <div class="header-left">
           <h1 class="title" id="selectedZoneTitle">General</h1>
-          <div class="subtitle" id="subtitleText">Zone-level Stats</div>
+          <div class="subtitle">
+            <span id="subtitleText">Zone-level Stats</span>
+            <span class="subtitle-syncs" id="subtitleSyncs">Syncs Today: <span id="dailySyncs">0</span></span>
+          </div>
           <div class="header-metrics">
             <div class="header-metric">
               <span class="header-metric-label">Farmers</span>
@@ -435,13 +533,22 @@ func Home() templ.Component {
               <span class="header-metric-label">Communities</span>
               <p class="header-metric-value" id="totalCommunities">0</p>
             </div>
-            <div class="header-metric">
-              <span class="header-metric-label">Syncs Today</span>
-              <p class="header-metric-value" id="dailySyncs">0</p>
-            </div>
           </div>
         </div>
         <div class="community-picker">
+          <div class="community-zone-picker">
+            <label class="community-label" for="zoneMobileSelect">Select Zone</label>
+            <select id="zoneMobileSelect" class="zone-mobile-select" aria-label="Zone select">
+              <option value="General">General</option>
+              <option value="Wa">Wa</option>
+              <option value="Yendi">Yendi</option>
+              <option value="Tamale">Tamale</option>
+              <option value="Sandema">Sandema</option>
+              <option value="Garu">Garu</option>
+              <option value="Langbinsi">Langbinsi</option>
+              <option value="Napkaduri">Napkanduri</option>
+            </select>
+          </div>
           <label class="community-label" for="communitySearch">Community</label>
           <input id="communitySearch" class="community-input" list="communityOptions" placeholder="All communities" />
           <select id="communitySelect" class="community-select" aria-label="Community select"></select>
@@ -464,21 +571,35 @@ func Home() templ.Component {
         <article class="card"><p class="card-label">Prefinance Given (GH₵)</p><p class="card-value" id="totalPrefinance">0</p></article>
         <article class="card"><p class="card-label">Amount To Recover (GH₵)</p><p class="card-value" id="totalBalance">0</p></article>
       </section>
-      <div class="loading-indicator" role="status" aria-live="polite">
-        <span class="spinner" aria-hidden="true"></span>
-        <span>Fetching latest data...</span>
+      <div class="community-picker mobile-community-picker">
+        <div class="community-zone-picker">
+          <label class="community-label" for="zoneMobileSelectBottom">Select Zone</label>
+          <select id="zoneMobileSelectBottom" class="zone-mobile-select" aria-label="Zone select">
+            <option value="General">General</option>
+            <option value="Wa">Wa</option>
+            <option value="Yendi">Yendi</option>
+            <option value="Tamale">Tamale</option>
+            <option value="Sandema">Sandema</option>
+            <option value="Garu">Garu</option>
+            <option value="Langbinsi">Langbinsi</option>
+            <option value="Napkaduri">Napkanduri</option>
+          </select>
+        </div>
+        <label class="community-label" for="communitySearchBottom">Community</label>
+        <input id="communitySearchBottom" class="community-input" list="communityOptionsBottom" placeholder="All communities" />
+        <select id="communitySelectBottom" class="community-select" aria-label="Community select"></select>
+        <datalist id="communityOptionsBottom"></datalist>
+        <div class="filters-row">
+          <div>
+            <label class="community-label" for="fromDateBottom">From</label>
+            <input id="fromDateBottom" class="date-input" type="date" />
+          </div>
+          <div>
+            <label class="community-label" for="toDateBottom">To</label>
+            <input id="toDateBottom" class="date-input" type="date" />
+          </div>
+        </div>
       </div>
-      <section class="charts">
-        <article class="chart-card">
-          <p class="chart-title">Recovery Rate</p>
-          <p class="chart-meta" id="recoveryRateText">Recovery: 0%</p>
-          <div id="recoveryChart"></div>
-        </article>
-        <article class="chart-card">
-          <p class="chart-title">Financial Breakdown</p>
-          <div id="financeChart"></div>
-        </article>
-      </section>
       <div class="error" id="errorBox" role="status" aria-live="polite"></div>
     </main>
   </div>
@@ -488,6 +609,7 @@ func Home() templ.Component {
       const zoneButtons = Array.from(document.querySelectorAll(".zone-btn"));
       const selectedZoneTitle = document.getElementById("selectedZoneTitle");
       const subtitleText = document.getElementById("subtitleText");
+      const subtitleSyncs = document.getElementById("subtitleSyncs");
       const errorBox = document.getElementById("errorBox");
       const communitySearch = document.getElementById("communitySearch");
       const communitySelect = document.getElementById("communitySelect");
@@ -495,6 +617,12 @@ func Home() templ.Component {
       const communityOptions = document.getElementById("communityOptions");
       const fromDate = document.getElementById("fromDate");
       const toDate = document.getElementById("toDate");
+      const zoneMobileSelectBottom = document.getElementById("zoneMobileSelectBottom");
+      const communitySearchBottom = document.getElementById("communitySearchBottom");
+      const communitySelectBottom = document.getElementById("communitySelectBottom");
+      const communityOptionsBottom = document.getElementById("communityOptionsBottom");
+      const fromDateBottom = document.getElementById("fromDateBottom");
+      const toDateBottom = document.getElementById("toDateBottom");
       const dashboardMain = document.getElementById("dashboardMain");
 
       const totalFarmers = document.getElementById("totalFarmers");
@@ -549,6 +677,14 @@ func Home() templ.Component {
       }
 
       function renderCharts(data) {
+        const recoveryChartEl = document.querySelector("#recoveryChart");
+        const financeChartEl = document.querySelector("#financeChart");
+        const recoveryRateNode = document.getElementById("recoveryRateText");
+
+        if (!recoveryChartEl || !financeChartEl || !recoveryRateNode) {
+          return;
+        }
+
         const amount = Number(data.totalAmount || 0);
         const prefinance = Number(data.totalPrefinance || 0);
         const balance = Number(data.totalBalance || 0);
@@ -556,7 +692,7 @@ func Home() templ.Component {
         const unpaidPrefinance = Math.max(0, Math.min(balance, prefinance));
         const recoveredPrefinance = Math.max(0, prefinance - unpaidPrefinance);
         const recoveryPercent = prefinance > 0 ? (recoveredPrefinance / prefinance) * 100 : 0;
-        recoveryRateText.textContent = "Recovery: " + recoveryPercent.toFixed(1) + "%";
+        recoveryRateNode.textContent = "Recovery: " + recoveryPercent.toFixed(1) + "%";
 
         const recoveryOptions = {
           chart: { type: "pie", height: 280 },
@@ -575,14 +711,14 @@ func Home() templ.Component {
         };
 
         if (!recoveryChart) {
-          recoveryChart = new ApexCharts(document.querySelector("#recoveryChart"), recoveryOptions);
+          recoveryChart = new ApexCharts(recoveryChartEl, recoveryOptions);
           recoveryChart.render();
         } else {
           recoveryChart.updateOptions(recoveryOptions);
         }
 
         if (!financeChart) {
-          financeChart = new ApexCharts(document.querySelector("#financeChart"), financeOptions);
+          financeChart = new ApexCharts(financeChartEl, financeOptions);
           financeChart.render();
         } else {
           financeChart.updateOptions(financeOptions);
@@ -612,19 +748,28 @@ func Home() templ.Component {
 
       async function loadCommunities(zone) {
         communitySearch.value = "";
+        communitySearchBottom.value = "";
         communityOptions.innerHTML = "";
+        communityOptionsBottom.innerHTML = "";
 
         if (zone === "General") {
           communitySearch.disabled = true;
+          communitySearchBottom.disabled = true;
           communitySelect.disabled = true;
+          communitySelectBottom.disabled = true;
           communitySearch.placeholder = "All communities";
+          communitySearchBottom.placeholder = "All communities";
           communitySelect.innerHTML = "<option value=\"\">All communities</option>";
+          communitySelectBottom.innerHTML = "<option value=\"\">All communities</option>";
           return;
         }
 
         communitySearch.disabled = false;
+        communitySearchBottom.disabled = false;
         communitySelect.disabled = false;
+        communitySelectBottom.disabled = false;
         communitySearch.placeholder = "Search communities";
+        communitySearchBottom.placeholder = "Search communities";
 
         if (communitiesByZone[zone]) {
           renderCommunityOptions(communitiesByZone[zone]);
@@ -664,21 +809,26 @@ func Home() templ.Component {
       function renderCommunityOptions(communities) {
         communityOptions.innerHTML = "";
         communitySelect.innerHTML = "";
+        communityOptionsBottom.innerHTML = "";
+        communitySelectBottom.innerHTML = "";
 
         const defaultOption = document.createElement("option");
         defaultOption.value = "";
         defaultOption.textContent = "All communities";
         communitySelect.appendChild(defaultOption);
+        communitySelectBottom.appendChild(defaultOption.cloneNode(true));
 
         communities.forEach(function (community) {
           const option = document.createElement("option");
           option.value = community;
           communityOptions.appendChild(option);
+          communityOptionsBottom.appendChild(option.cloneNode(true));
 
           const selectOption = document.createElement("option");
           selectOption.value = community;
           selectOption.textContent = community;
           communitySelect.appendChild(selectOption);
+          communitySelectBottom.appendChild(selectOption.cloneNode(true));
         });
       }
 
@@ -712,6 +862,7 @@ func Home() templ.Component {
       async function loadZoneStats(zone) {
         selectedZoneTitle.textContent = zone;
         subtitleText.textContent = "Live zone-level stats";
+        subtitleSyncs.style.display = "inline-flex";
         errorBox.style.display = "none";
         errorBox.textContent = "";
         setLoading();
@@ -746,6 +897,7 @@ func Home() templ.Component {
 
       async function loadCommunityStats(zone, community) {
         subtitleText.textContent = "Community: " + community;
+        subtitleSyncs.style.display = "none";
         errorBox.style.display = "none";
         errorBox.textContent = "";
         setLoading();
@@ -796,6 +948,11 @@ func Home() templ.Component {
         loadZoneStats(selectedZone);
       });
 
+      zoneMobileSelectBottom.addEventListener("change", function () {
+        zoneMobileSelect.value = zoneMobileSelectBottom.value;
+        zoneMobileSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+
       communitySearch.addEventListener("change", function () {
         const value = communitySearch.value.trim();
         if (!value) {
@@ -816,6 +973,11 @@ func Home() templ.Component {
         loadCommunityStats(selectedZone, match);
       });
 
+      communitySearchBottom.addEventListener("change", function () {
+        communitySearch.value = communitySearchBottom.value;
+        communitySearch.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+
       communitySelect.addEventListener("change", function () {
         const value = communitySelect.value.trim();
         if (!value) {
@@ -823,6 +985,11 @@ func Home() templ.Component {
           return;
         }
         loadCommunityStats(selectedZone, value);
+      });
+
+      communitySelectBottom.addEventListener("change", function () {
+        communitySelect.value = communitySelectBottom.value;
+        communitySelect.dispatchEvent(new Event("change", { bubbles: true }));
       });
 
       function reloadForCurrentSelection() {
@@ -836,6 +1003,16 @@ func Home() templ.Component {
 
       fromDate.addEventListener("change", reloadForCurrentSelection);
       toDate.addEventListener("change", reloadForCurrentSelection);
+
+      fromDateBottom.addEventListener("change", function () {
+        fromDate.value = fromDateBottom.value;
+        fromDate.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+
+      toDateBottom.addEventListener("change", function () {
+        toDate.value = toDateBottom.value;
+        toDate.dispatchEvent(new Event("change", { bubbles: true }));
+      });
 
       loadCommunities("General");
       loadZoneStats("General");

@@ -8,4 +8,5 @@ import (
 func registerPageRoutes(r *echo.Echo, h *handler.Handlers) {
 	r.GET("/", h.Page.Home)
 	r.GET("/logs", h.Page.Logs)
+	r.GET("/analytics", h.Page.Analytics)
 }
