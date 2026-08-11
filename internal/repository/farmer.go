@@ -491,6 +491,76 @@ func (r *FarmerRepository) GetCommunityStats(ctx context.Context, zoneName, comm
 	return &stats, nil
 }
 
+func (r *FarmerRepository) GetGeneralOverview(ctx context.Context) (*farmer.AnalyticsOverviewStats, error) {
+	stmt := `
+		SELECT
+			'General'::text AS zone_name,
+			COUNT(*) AS total_farmers,
+			COUNT(DISTINCT NULLIF(BTRIM(community), '')) AS total_communities,
+			COALESCE((
+				SELECT SUM(zds.sync_count)
+				FROM zone_daily_syncs zds
+			), 0)::int AS total_syncs,
+			COALESCE(SUM(total_kg_brought), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(total_amount), 0)::float8 AS total_amount,
+			COALESCE(SUM(prefinance), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(balance), 0)::float8 AS total_balance
+		FROM
+			farmers
+		WHERE
+			deleted_at IS NULL
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt)
+	if err != nil {
+		return nil, fmt.Errorf("get general overview failed: %w", err)
+	}
+
+	stats, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[farmer.AnalyticsOverviewStats])
+	if err != nil {
+		return nil, fmt.Errorf("collect general overview failed: %w", err)
+	}
+
+	return &stats, nil
+}
+
+func (r *FarmerRepository) GetZoneOverview(ctx context.Context, zoneName string) (*farmer.AnalyticsOverviewStats, error) {
+	stmt := `
+		SELECT
+			@zone_name::text AS zone_name,
+			COUNT(*) AS total_farmers,
+			COUNT(DISTINCT NULLIF(BTRIM(community), '')) AS total_communities,
+			COALESCE((
+				SELECT SUM(zds.sync_count)
+				FROM zone_daily_syncs zds
+				WHERE LOWER(BTRIM(zds.zone_name)) = LOWER(BTRIM(@zone_name))
+			), 0)::int AS total_syncs,
+			COALESCE(SUM(total_kg_brought), 0)::float8 AS total_kg_brought,
+			COALESCE(SUM(total_amount), 0)::float8 AS total_amount,
+			COALESCE(SUM(prefinance), 0)::float8 AS total_prefinance,
+			COALESCE(SUM(balance), 0)::float8 AS total_balance
+		FROM
+			farmers
+		WHERE
+			LOWER(BTRIM(zone_name)) = LOWER(BTRIM(@zone_name))
+			AND deleted_at IS NULL
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, stmt, pgx.NamedArgs{
+		"zone_name": zoneName,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get zone overview failed zone=%s: %w", zoneName, err)
+	}
+
+	stats, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[farmer.AnalyticsOverviewStats])
+	if err != nil {
+		return nil, fmt.Errorf("collect zone overview failed zone=%s: %w", zoneName, err)
+	}
+
+	return &stats, nil
+}
+
 func (r *FarmerRepository) IncrementDailySync(ctx context.Context, zoneName string) error {
 	stmt := `
 		INSERT INTO zone_daily_syncs (zone_name, sync_date, sync_count, created_at, updated_at)

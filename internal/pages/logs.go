@@ -22,14 +22,14 @@ func Logs() templ.Component {
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f3f7f6;
+      --bg: #eef8ee;
       --surface: #ffffff;
       --surface-soft: #f8fbfa;
       --text: #102127;
       --muted: #56707d;
       --accent: #0f766e;
       --accent-soft: #e8f6f4;
-      --border: #d8e5e3;
+      --border: #15803d;
       --shadow: 0 12px 28px rgba(16, 33, 39, 0.08);
       --radius: 16px;
     }
@@ -40,9 +40,7 @@ func Logs() templ.Component {
       margin: 0;
       font-family: "Manrope", "Segoe UI", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at 12% 12%, #dff2ef 0%, transparent 40%),
-        linear-gradient(180deg, #f9fcfb 0%, var(--bg) 100%);
+      background: var(--bg);
     }
     .wrap {
       max-width: 960px;
@@ -95,12 +93,12 @@ func Logs() templ.Component {
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
     .nav-link:hover {
-      border-color: #a7cfc8;
+      border-color: var(--border);
       transform: translateY(-1px);
     }
     .nav-link.active {
       background: var(--accent-soft);
-      border-color: #7dcfc5;
+      border-color: var(--border);
       color: #0a5d56;
     }
     .header-actions.mobile {
@@ -118,7 +116,7 @@ func Logs() templ.Component {
     }
     .card {
       background: #fff;
-      border: 1px solid #d8e5e3;
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 20px;
     }
@@ -144,7 +142,7 @@ func Logs() templ.Component {
     .date-input {
       width: 100%;
       max-width: 100%;
-      border: 1px solid #d8e5e3;
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 10px 12px;
       font-size: 0.95rem;
@@ -153,8 +151,8 @@ func Logs() templ.Component {
     }
     .date-input:focus {
       outline: none;
-      border-color: #8ad2ca;
-      box-shadow: 0 0 0 3px rgba(138, 210, 202, 0.25);
+      border-color: var(--border);
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.25);
     }
     h1 {
       margin: 0 0 10px;
@@ -177,7 +175,7 @@ func Logs() templ.Component {
       gap: 8px;
     }
     .names-list li {
-      border: 1px solid #d8e5e3;
+      border: 1px solid var(--border);
       border-radius: 10px;
       background: #f8fbfa;
       padding: 10px 12px;
@@ -199,7 +197,7 @@ func Logs() templ.Component {
     a:hover {
       text-decoration: underline;
     }
-    @media (max-width: 640px) {
+    @media (pointer: coarse) and (hover: none) {
       .wrap {
         padding: 16px 12px;
       }

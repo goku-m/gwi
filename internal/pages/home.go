@@ -15,6 +15,14 @@ func Home() templ.Component {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TEBMA KANDU</title>
+  <script>
+    (function () {
+      var ua = navigator.userAgent || "";
+      if (/Mobi|Android|iPhone|iPad|iPod/i.test(ua)) {
+        document.documentElement.classList.add("mobile-layout");
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,14 +32,14 @@ func Home() templ.Component {
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <style>
     :root {
-      --bg: #f3f7f6;
+      --bg: #eef8ee;
       --surface: #ffffff;
       --surface-soft: #f8fbfa;
       --text: #102127;
       --muted: #56707d;
       --accent: #0f766e;
       --accent-soft: #e8f6f4;
-      --border: #d8e5e3;
+      --border: #15803d;
       --shadow: 0 12px 28px rgba(16, 33, 39, 0.08);
       --radius: 16px;
     }
@@ -40,9 +48,7 @@ func Home() templ.Component {
       margin: 0;
       font-family: "Manrope", "Segoe UI", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at 12% 12%, #dff2ef 0%, transparent 40%),
-        linear-gradient(180deg, #f9fcfb 0%, var(--bg) 100%);
+      background: var(--bg);
     }
     .layout {
       min-height: 100vh;
@@ -103,7 +109,7 @@ func Home() templ.Component {
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
     .nav-link:hover {
-      border-color: #a7cfc8;
+      border-color: var(--border);
       transform: translateY(-1px);
     }
     .mobile-logs-link {
@@ -156,14 +162,14 @@ func Home() templ.Component {
       font-weight: 600;
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
-    .zone-btn:hover { border-color: #a7cfc8; transform: translateY(-1px); }
+    .zone-btn:hover { border-color: var(--border); transform: translateY(-1px); }
     .zone-btn:focus-visible {
       outline: 2px solid #78c9bf;
       outline-offset: 1px;
     }
     .zone-btn.active {
       background: var(--accent-soft);
-      border-color: #7dcfc5;
+      border-color: var(--border);
       color: #0a5d56;
       box-shadow: 0 6px 14px rgba(15, 118, 110, 0.12);
     }
@@ -266,8 +272,8 @@ func Home() templ.Component {
     }
     .community-input:focus {
       outline: none;
-      border-color: #8ad2ca;
-      box-shadow: 0 0 0 3px rgba(138, 210, 202, 0.25);
+      border-color: var(--border);
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.25);
     }
     .community-select {
       display: none;
@@ -373,7 +379,7 @@ func Home() templ.Component {
     .spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid #c9dcda;
+      border: 2px solid #15803d;
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 700ms linear infinite;
@@ -384,94 +390,91 @@ func Home() templ.Component {
     @media (prefers-reduced-motion: reduce) {
       .zone-btn, .card { transition: none; }
     }
-    @media (max-width: 960px) {
-      .layout { grid-template-columns: 1fr; }
-      .main {
-        display: flex;
-        flex-direction: column;
-      }
-      .sidebar {
-        display: none;
-      }
-      .main-mobile-brand {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        margin-bottom: 8px;
-      }
-      .main-mobile-brand .brand-logo {
-        width: 92px;
-      }
-      .main-mobile-actions {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 8px;
-      }
-      .main-mobile-actions .nav-link {
-        width: auto;
-        flex: 1 1 0;
-        padding: 7px 9px;
-        font-size: 0.82rem;
-      }
-      .mobile-actions .nav-link {
-        width: auto;
-        flex: 0 1 auto;
-        padding: 7px 9px;
-        font-size: 0.82rem;
-      }
-      .zone-list {
-        display: none;
-      }
-      .header {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        padding: 10px 12px;
-      }
-      .header-left,
-      .cards,
-      .community-picker {
-        width: 100%;
-        min-width: 0;
-      }
-      .header-metrics {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(130px, 1fr));
-        gap: 8px;
-        margin-top: 8px;
-      }
-      .header-metric {
-        min-width: 0;
-        padding: 5px 7px;
-      }
-      .cards {
-        order: 2;
-        margin-top: 8px;
-        grid-template-columns: repeat(2, minmax(130px, 1fr));
-      }
-      .community-picker {
-        order: 3;
-        margin-top: 0;
-      }
-      .header .community-picker {
-        display: none;
-      }
-      .mobile-community-picker {
-        display: grid;
-        gap: 6px;
-        margin-top: 8px;
-        order: 4;
-        background: var(--surface-soft);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 10px 12px;
-      }
-      .community-zone-picker { display: grid; }
-      .community-input { display: none; }
-      .community-select { display: block; }
-      .filters-row { grid-template-columns: 1fr 1fr; }
+    .main-mobile-brand,
+    .main-mobile-actions,
+    .mobile-community-picker {
+      display: none;
     }
+    html.mobile-layout .layout { grid-template-columns: 1fr; }
+    html.mobile-layout .main {
+      display: flex;
+      flex-direction: column;
+    }
+    html.mobile-layout .sidebar {
+      display: none;
+    }
+    html.mobile-layout .main-mobile-brand {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 8px;
+    }
+    html.mobile-layout .main-mobile-brand .brand-logo {
+      width: 92px;
+    }
+    html.mobile-layout .main-mobile-actions {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    html.mobile-layout .main-mobile-actions .nav-link {
+      width: auto;
+      flex: 1 1 0;
+      padding: 7px 9px;
+      font-size: 0.82rem;
+    }
+    html.mobile-layout .zone-list {
+      display: none;
+    }
+    html.mobile-layout .header {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 10px 12px;
+    }
+    html.mobile-layout .header-left,
+    html.mobile-layout .cards,
+    html.mobile-layout .community-picker {
+      width: 100%;
+      min-width: 0;
+    }
+    html.mobile-layout .header-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    html.mobile-layout .header-metric {
+      min-width: 0;
+      padding: 5px 7px;
+    }
+    html.mobile-layout .cards {
+      order: 2;
+      margin-top: 8px;
+      grid-template-columns: repeat(2, minmax(130px, 1fr));
+    }
+    html.mobile-layout .community-picker {
+      order: 3;
+      margin-top: 0;
+    }
+    html.mobile-layout .header .community-picker {
+      display: none;
+    }
+    html.mobile-layout .mobile-community-picker {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+      order: 4;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    html.mobile-layout .community-zone-picker { display: grid; }
+    html.mobile-layout .community-input { display: none; }
+    html.mobile-layout .community-select { display: block; }
+    html.mobile-layout .filters-row { grid-template-columns: 1fr 1fr; }
     @media (max-width: 560px) {
       .main { padding: 14px; }
       .title { font-size: 1.2rem; }
@@ -506,10 +509,10 @@ func Home() templ.Component {
       </div>
     </aside>
     <main class="main" id="dashboardMain">
-      <div class="main-mobile-brand">
+      <div class="main-mobile-brand" hidden>
         <img class="brand-logo" src="/static/images/tk.png" alt="TEBMA KANDU logo" />
       </div>
-      <div class="main-mobile-actions">
+      <div class="main-mobile-actions" hidden>
         <a class="nav-link" href="/logs">Daily Logs</a>
         <a class="nav-link" href="/analytics">Analytics</a>
       </div>
@@ -571,7 +574,7 @@ func Home() templ.Component {
         <article class="card"><p class="card-label">Prefinance Given (GH₵)</p><p class="card-value" id="totalPrefinance">0</p></article>
         <article class="card"><p class="card-label">Amount To Recover (GH₵)</p><p class="card-value" id="totalBalance">0</p></article>
       </section>
-      <div class="community-picker mobile-community-picker">
+      <div class="community-picker mobile-community-picker" hidden>
         <div class="community-zone-picker">
           <label class="community-label" for="zoneMobileSelectBottom">Select Zone</label>
           <select id="zoneMobileSelectBottom" class="zone-mobile-select" aria-label="Zone select">
@@ -624,6 +627,17 @@ func Home() templ.Component {
       const fromDateBottom = document.getElementById("fromDateBottom");
       const toDateBottom = document.getElementById("toDateBottom");
       const dashboardMain = document.getElementById("dashboardMain");
+      const mainMobileBrand = document.querySelector(".main-mobile-brand");
+      const mainMobileActions = document.querySelector(".main-mobile-actions");
+      const mobileCommunityPicker = document.querySelector(".mobile-community-picker");
+
+      if (document.documentElement.classList.contains("mobile-layout")) {
+        [mainMobileBrand, mainMobileActions, mobileCommunityPicker].forEach(function (element) {
+          if (element) {
+            element.hidden = false;
+          }
+        });
+      }
 
       const totalFarmers = document.getElementById("totalFarmers");
       const totalCommunities = document.getElementById("totalCommunities");

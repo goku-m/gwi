@@ -9,6 +9,7 @@ import (
 func registerFarmerRoutes(r *echo.Group, h *handler.FarmerHandler, auth *middleware.AuthMiddleware) {
 	// General stats across all zones
 	r.GET("/farmers/stats", h.GetGeneralStats)
+	r.GET("/farmers/overview", h.GetGeneralOverview)
 	r.GET("/farmers/new", h.GetGeneralNewFarmers)
 	r.GET("/farmers/logs", h.GetDailyLogNames)
 
@@ -31,6 +32,7 @@ func registerFarmerRoutes(r *echo.Group, h *handler.FarmerHandler, auth *middlew
 
 	// Stats (NEW)
 	farmers.GET("/stats", h.GetZoneStats)
+	farmers.GET("/overview", h.GetZoneOverview)
 	farmers.GET("/new", h.GetZoneNewFarmers)
 
 	// Community stats

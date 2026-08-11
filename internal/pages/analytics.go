@@ -21,17 +21,16 @@ func Analytics() templ.Component {
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.2/flowbite.min.css" rel="stylesheet" />
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <style>
     :root {
-      --bg: #f3f7f6;
+      --bg: #eef8ee;
       --surface: #ffffff;
       --surface-soft: #f8fbfa;
       --text: #102127;
       --muted: #56707d;
       --accent: #0f766e;
       --accent-soft: #e8f6f4;
-      --border: #d8e5e3;
+      --border: #15803d;
       --shadow: 0 12px 28px rgba(16, 33, 39, 0.08);
       --radius: 16px;
     }
@@ -40,9 +39,7 @@ func Analytics() templ.Component {
       margin: 0;
       font-family: "Manrope", "Segoe UI", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at 12% 12%, #dff2ef 0%, transparent 40%),
-        linear-gradient(180deg, #f9fcfb 0%, var(--bg) 100%);
+      background: var(--bg);
     }
     .layout {
       min-height: 100vh;
@@ -103,12 +100,12 @@ func Analytics() templ.Component {
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
     .nav-link:hover {
-      border-color: #a7cfc8;
+      border-color: var(--border);
       transform: translateY(-1px);
     }
     .nav-link.active {
       background: var(--accent-soft);
-      border-color: #7dcfc5;
+      border-color: var(--border);
       color: #0a5d56;
     }
     .mobile-logs-link {
@@ -161,10 +158,10 @@ func Analytics() templ.Component {
       font-weight: 600;
       transition: background-color 120ms ease, border-color 120ms ease, transform 120ms ease;
     }
-    .zone-btn:hover { border-color: #a7cfc8; transform: translateY(-1px); }
+    .zone-btn:hover { border-color: var(--border); transform: translateY(-1px); }
     .zone-btn.active {
       background: var(--accent-soft);
-      border-color: #7dcfc5;
+      border-color: var(--border);
       color: #0a5d56;
       box-shadow: 0 6px 14px rgba(15, 118, 110, 0.12);
     }
@@ -229,33 +226,93 @@ func Analytics() templ.Component {
     }
     .community-input:focus {
       outline: none;
-      border-color: #8ad2ca;
-      box-shadow: 0 0 0 3px rgba(138, 210, 202, 0.25);
+      border-color: var(--border);
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.25);
     }
-    .charts {
+    .recovery-dashboard {
       display: grid;
-      gap: 14px;
-      grid-template-columns: repeat(2, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
     }
-    .chart-card {
+    .dashboard-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .dashboard-kicker {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .dashboard-title {
+      margin: 3px 0 0;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .dashboard-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+    .dashboard-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .dashboard-card {
       background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 14px;
+      padding: 12px;
+      min-height: 108px;
+      display: grid;
+      gap: 6px;
     }
-    .chart-title {
-      margin: 0 0 10px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
+    .dashboard-label {
       color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
-    .chart-meta {
-      margin: -2px 0 10px;
-      font-size: 0.86rem;
-      font-weight: 700;
-      color: #0a5d56;
+    .dashboard-value {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .dashboard-value.good { color: #0a5d56; }
+    .dashboard-value.warn { color: #b45309; }
+    .dashboard-value.accent { color: #0f766e; }
+    .dashboard-subvalue {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.25;
+    }
+    .dashboard-progress {
+      height: 9px;
+      background: #e7efed;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 2px;
+    }
+    .dashboard-progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #0f766e 0%, #10b981 100%);
+      transition: width 220ms ease;
     }
     .loading-indicator {
       display: none;
@@ -272,7 +329,7 @@ func Analytics() templ.Component {
     .spinner {
       width: 16px;
       height: 16px;
-      border: 2px solid #c9dcda;
+      border: 2px solid #15803d;
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 700ms linear infinite;
@@ -283,7 +340,7 @@ func Analytics() templ.Component {
     @media (prefers-reduced-motion: reduce) {
       .zone-btn, .card { transition: none; }
     }
-    @media (max-width: 960px) {
+    @media (pointer: coarse) and (hover: none) {
       .layout { grid-template-columns: 1fr; }
       .main {
         display: flex;
@@ -330,13 +387,14 @@ func Analytics() templ.Component {
       .community-picker {
         margin-top: 0;
       }
+      .dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .community-zone-picker { display: grid; }
-      .charts { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
       .main { padding: 14px; }
       .title { font-size: 0.98rem; }
       .main-mobile-brand .brand-logo { width: 84px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -379,8 +437,8 @@ func Analytics() templ.Component {
         <div class="header-left">
           <h1 class="title" id="selectedZoneTitle">Analytics</h1>
           <div class="subtitle">
-            <span id="subtitleText">Zone-level Stats</span>
-            <span class="subtitle-syncs" id="subtitleSyncs">Syncs Today: <span id="dailySyncs">0</span></span>
+            <span id="subtitleText">Overall zone analytics</span>
+            <span class="subtitle-syncs" id="subtitleSyncs">Total Syncs: <span id="totalSyncs">0</span></span>
           </div>
         </div>
         <div class="community-picker">
@@ -403,16 +461,31 @@ func Analytics() templ.Component {
         <span class="spinner" aria-hidden="true"></span>
         <span>Fetching latest analytics...</span>
       </div>
-      <section class="charts">
-        <article class="chart-card">
-          <p class="chart-title">Recovery Rate</p>
-          <p class="chart-meta" id="recoveryRateText">Recovery: 0%</p>
-          <div id="recoveryChart"></div>
-        </article>
-        <article class="chart-card">
-          <p class="chart-title">Financial Breakdown</p>
-          <div id="financeChart"></div>
-        </article>
+      <section class="recovery-dashboard">
+     
+        <div class="dashboard-grid">
+          <article class="dashboard-card">
+            <span class="dashboard-label">Recovery Rate</span>
+            <p class="dashboard-value accent" id="recoveryRateValue">0%</p>
+           
+            <div class="dashboard-progress" aria-hidden="true"><span id="recoveryProgressBar"></span></div>
+          </article>
+          <article class="dashboard-card">
+            <span class="dashboard-label">Recovered</span>
+            <p class="dashboard-value good" id="recoveredPrefinance">GH&#8373; 0.00</p>
+            <span class="dashboard-subvalue">Prefinance already recovered</span>
+          </article>
+          <article class="dashboard-card">
+            <span class="dashboard-label">Outstanding</span>
+            <p class="dashboard-value warn" id="outstandingBalance">GH&#8373; 0.00</p>
+            <span class="dashboard-subvalue">Amount still to recover</span>
+          </article>
+          <article class="dashboard-card">
+            <span class="dashboard-label">Total Prefinance</span>
+            <p class="dashboard-value" id="totalPrefinanceValue">GH&#8373; 0.00</p>
+            <span class="dashboard-subvalue">Current zone total</span>
+          </article>
+        </div>
       </section>
     </main>
   </div>
@@ -422,86 +495,61 @@ func Analytics() templ.Component {
       const selectedZoneTitle = document.getElementById("selectedZoneTitle");
       const subtitleText = document.getElementById("subtitleText");
       const subtitleSyncs = document.getElementById("subtitleSyncs");
-      const dailySyncs = document.getElementById("dailySyncs");
-      const recoveryRateText = document.getElementById("recoveryRateText");
+      const totalSyncs = document.getElementById("totalSyncs");
+      const recoveryRateValue = document.getElementById("recoveryRateValue");
+      const recoveryRateSummary = document.getElementById("recoveryRateSummary");
+      const recoveryProgressBar = document.getElementById("recoveryProgressBar");
+      const recoveredPrefinance = document.getElementById("recoveredPrefinance");
+      const outstandingBalance = document.getElementById("outstandingBalance");
+      const totalPrefinanceValue = document.getElementById("totalPrefinanceValue");
       const analyticsMain = document.getElementById("analyticsMain");
       const zoneMobileSelect = document.getElementById("zoneMobileSelect");
 
       let selectedZone = "General";
-      let recoveryChart = null;
-      let financeChart = null;
-      let activeStatsRequest = null;
+      let activeRequestController = null;
 
       function formatNumber(value, maxFractionDigits) {
         const n = Number(value || 0);
         return n.toLocaleString(undefined, { maximumFractionDigits: maxFractionDigits });
       }
 
+      function formatCurrency(value) {
+        return "GH\u20B5 " + formatNumber(value, 2);
+      }
+
       function setLoading() {
         analyticsMain.classList.add("loading");
-        recoveryRateText.textContent = "Recovery: ...";
-        dailySyncs.textContent = "...";
+        totalSyncs.textContent = "...";
+        if (recoveryRateValue) recoveryRateValue.textContent = "...";
+        if (recoveryRateSummary) recoveryRateSummary.textContent = "Loading recovery snapshot...";
+        if (recoveryProgressBar) recoveryProgressBar.style.width = "0%";
+        if (recoveredPrefinance) recoveredPrefinance.textContent = "...";
+        if (outstandingBalance) outstandingBalance.textContent = "...";
+        if (totalPrefinanceValue) totalPrefinanceValue.textContent = "...";
       }
 
-      function renderCharts(data) {
-        const recoveryChartEl = document.querySelector("#recoveryChart");
-        const financeChartEl = document.querySelector("#financeChart");
-
-        if (!recoveryChartEl || !financeChartEl || !recoveryRateText) {
-          return;
-        }
-
-        const amount = Number(data.totalAmount || 0);
+      function renderRecoveryDashboard(data) {
         const prefinance = Number(data.totalPrefinance || 0);
         const balance = Number(data.totalBalance || 0);
+        const recoveredPrefinanceValue = Math.max(0, prefinance - balance);
+        const recoveryPercent = prefinance > 0 ? (recoveredPrefinanceValue / prefinance) * 100 : 0;
 
-        const unpaidPrefinance = Math.max(0, Math.min(balance, prefinance));
-        const recoveredPrefinance = Math.max(0, prefinance - unpaidPrefinance);
-        const recoveryPercent = prefinance > 0 ? (recoveredPrefinance / prefinance) * 100 : 0;
-        recoveryRateText.textContent = "Recovery: " + recoveryPercent.toFixed(1) + "%";
-
-        const recoveryOptions = {
-          chart: { type: "pie", height: 280 },
-          series: [recoveredPrefinance, unpaidPrefinance],
-          labels: ["Recovered Prefinance", "Unpaid Prefinance"],
-          colors: ["#0f766e", "#f59e0b"],
-          legend: { position: "bottom" }
-        };
-
-        const financeOptions = {
-          chart: { type: "donut", height: 280 },
-          series: [amount, prefinance, balance],
-          labels: ["Total Amount", "Prefinance", "Balance"],
-          colors: ["#0f766e", "#0ea5e9", "#f59e0b"],
-          legend: { position: "bottom" }
-        };
-
-        if (!recoveryChart) {
-          recoveryChart = new ApexCharts(recoveryChartEl, recoveryOptions);
-          recoveryChart.render();
-        } else {
-          recoveryChart.updateOptions(recoveryOptions);
+        if (recoveryRateValue) {
+          recoveryRateValue.textContent = recoveryPercent.toFixed(1) + "%";
         }
-
-        if (!financeChart) {
-          financeChart = new ApexCharts(financeChartEl, financeOptions);
-          financeChart.render();
-        } else {
-          financeChart.updateOptions(financeOptions);
+        if (recoveryRateSummary) {
+          recoveryRateSummary.textContent = formatCurrency(recoveredPrefinanceValue) + " recovered of " + formatCurrency(prefinance);
         }
+        if (recoveryProgressBar) {
+          recoveryProgressBar.style.width = Math.max(0, Math.min(100, recoveryPercent)).toFixed(1) + "%";
+        }
+        if (recoveredPrefinance) recoveredPrefinance.textContent = formatCurrency(recoveredPrefinanceValue);
+        if (outstandingBalance) outstandingBalance.textContent = formatCurrency(balance);
+        if (totalPrefinanceValue) totalPrefinanceValue.textContent = formatCurrency(prefinance);
       }
 
-      function normalizeForCompare(value) {
-        return (value || "").trim().toLowerCase();
-      }
-
-      async function fetchStats(route) {
-        if (activeStatsRequest) {
-          activeStatsRequest.abort();
-        }
-
-        activeStatsRequest = new AbortController();
-        const response = await fetch(route, { signal: activeStatsRequest.signal });
+      async function fetchJson(route, signal) {
+        const response = await fetch(route, { signal: signal });
         if (!response.ok) {
           throw new Error("Request failed with status " + response.status);
         }
@@ -510,25 +558,41 @@ func Analytics() templ.Component {
       }
 
       async function loadZoneAnalytics(zone) {
+        if (activeRequestController) {
+          activeRequestController.abort();
+        }
+
+        activeRequestController = new AbortController();
+        const controller = activeRequestController;
+
         selectedZoneTitle.textContent = zone;
-        subtitleText.textContent = "Live zone-level analytics";
+        subtitleText.textContent = "Overall zone analytics";
         subtitleSyncs.style.display = "inline-flex";
         setLoading();
 
-        const route = zone === "General"
-          ? "/api/farmers/stats"
-          : "/api/zones/" + encodeURIComponent(zone) + "/farmers/stats";
+        const overviewRoute = zone === "General"
+          ? "/api/farmers/overview"
+          : "/api/zones/" + encodeURIComponent(zone) + "/farmers/overview";
 
         try {
-          const data = await fetchStats(route);
-          dailySyncs.textContent = formatNumber(data.dailySyncs, 0);
+          const data = await fetchJson(overviewRoute, controller.signal);
+
+          if (controller.signal.aborted) {
+            return;
+          }
+
+          totalSyncs.textContent = formatNumber(data.totalSyncs, 0);
+          renderRecoveryDashboard(data);
           analyticsMain.classList.remove("loading");
-          renderCharts(data);
         } catch (err) {
           if (err.name === "AbortError") {
             return;
           }
           analyticsMain.classList.remove("loading");
+        } finally {
+          if (activeRequestController === controller) {
+            activeRequestController = null;
+          }
         }
       }
 

@@ -77,6 +77,18 @@ type CommunityFarmerStats struct {
 	TotalBalance    float64 `json:"totalBalance" db:"total_balance"`
 }
 
+type AnalyticsOverviewStats struct {
+	ZoneName string `json:"zoneName" db:"zone_name"`
+
+	TotalFarmers     int     `json:"totalFarmers" db:"total_farmers"`
+	TotalCommunities int     `json:"totalCommunities" db:"total_communities"`
+	TotalSyncs       int     `json:"totalSyncs" db:"total_syncs"`
+	TotalKgBrought   float64 `json:"totalKgBrought" db:"total_kg_brought"`
+	TotalAmount      float64 `json:"totalAmount" db:"total_amount"`
+	TotalPrefinance  float64 `json:"totalPrefinance" db:"total_prefinance"`
+	TotalBalance     float64 `json:"totalBalance" db:"total_balance"`
+}
+
 type ZoneCommunitiesResponse struct {
 	ZoneName    string   `json:"zoneName"`
 	Communities []string `json:"communities"`
@@ -88,16 +100,16 @@ type NewFarmersStats struct {
 }
 
 type DailyLogEntry struct {
-	Date      string  `json:"date"`
-	Time      string  `json:"time"`
-	CreatedBy string  `json:"createdBy"`
-	UpdatedBy string  `json:"updatedBy"`
-	ZoneName  string  `json:"zoneName"`
-	Count     int     `json:"count"`
-	Action    string  `json:"action"`
-	Amount    float64 `json:"amount"`
-	WeightKg  float64 `json:"weightKg"`
-	CommunityNames string `json:"communityNames"`
+	Date           string  `json:"date"`
+	Time           string  `json:"time"`
+	CreatedBy      string  `json:"createdBy"`
+	UpdatedBy      string  `json:"updatedBy"`
+	ZoneName       string  `json:"zoneName"`
+	Count          int     `json:"count"`
+	Action         string  `json:"action"`
+	Amount         float64 `json:"amount"`
+	WeightKg       float64 `json:"weightKg"`
+	CommunityNames string  `json:"communityNames"`
 }
 
 type DailyLogsResponse struct {

@@ -180,6 +180,30 @@ func (s *FarmerService) GetGeneralStats(ctx echo.Context, fromDate, toDate *time
 	return stats, nil
 }
 
+func (s *FarmerService) GetGeneralOverview(ctx echo.Context) (*farmer.AnalyticsOverviewStats, error) {
+	logger := middleware.GetLogger(ctx)
+
+	stats, err := s.farmerRepo.GetGeneralOverview(ctx.Request().Context())
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to fetch general analytics overview")
+		return nil, err
+	}
+
+	return stats, nil
+}
+
+func (s *FarmerService) GetZoneOverview(ctx echo.Context, zoneName string) (*farmer.AnalyticsOverviewStats, error) {
+	logger := middleware.GetLogger(ctx)
+
+	stats, err := s.farmerRepo.GetZoneOverview(ctx.Request().Context(), zoneName)
+	if err != nil {
+		logger.Error().Err(err).Str("zone", zoneName).Msg("failed to fetch zone analytics overview")
+		return nil, err
+	}
+
+	return stats, nil
+}
+
 func (s *FarmerService) GetCommunityStats(ctx echo.Context, zoneName, communityName string, fromDate, toDate *time.Time) (*farmer.CommunityFarmerStats, error) {
 	logger := middleware.GetLogger(ctx)
 
@@ -232,8 +256,8 @@ func (s *FarmerService) GetDailyLogs(ctx echo.Context, logDate time.Time) (*farm
 	}
 
 	return &farmer.DailyLogsResponse{
-		Date:  logDate.Format("2006-01-02"),
-		Logs:  logs,
+		Date: logDate.Format("2006-01-02"),
+		Logs: logs,
 	}, nil
 }
 

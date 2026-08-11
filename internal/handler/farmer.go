@@ -211,6 +211,20 @@ func (h *FarmerHandler) GetZoneStats(c echo.Context) error {
 	return c.JSON(http.StatusOK, stats)
 }
 
+func (h *FarmerHandler) GetZoneOverview(c echo.Context) error {
+	zoneName := getZoneName(c)
+	if zoneName == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "zoneName is required")
+	}
+
+	stats, err := h.farmerService.GetZoneOverview(c, zoneName)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, stats)
+}
+
 func (h *FarmerHandler) GetGeneralStats(c echo.Context) error {
 	fromDate, toDate, dateErr := parseStatsDateRange(c)
 	if dateErr != nil {
@@ -218,6 +232,15 @@ func (h *FarmerHandler) GetGeneralStats(c echo.Context) error {
 	}
 
 	stats, err := h.farmerService.GetGeneralStats(c, fromDate, toDate)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, stats)
+}
+
+func (h *FarmerHandler) GetGeneralOverview(c echo.Context) error {
+	stats, err := h.farmerService.GetGeneralOverview(c)
 	if err != nil {
 		return err
 	}
