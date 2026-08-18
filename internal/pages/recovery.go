@@ -282,7 +282,7 @@ func Recovery() templ.Component {
     .dashboard-grid {
       display: grid;
       gap: 10px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
     }
     .dashboard-card {
       background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
@@ -500,6 +500,11 @@ func Recovery() templ.Component {
             <div class="dashboard-progress" aria-hidden="true"><span id="recoveryProgressBar"></span></div>
           </article>
           <article class="dashboard-card">
+            <span class="dashboard-label">Amount Payable</span>
+            <p class="dashboard-value good" id="amountPayableValue">GH&#8373; 0.00</p>
+            <span class="dashboard-subvalue">Amount to pay</span>
+          </article>
+          <article class="dashboard-card">
             <span class="dashboard-label">Recovered</span>
             <p class="dashboard-value good" id="recoveredPrefinance">GH&#8373; 0.00</p>
             <span class="dashboard-subvalue">Prefinance already recovered</span>
@@ -528,6 +533,7 @@ func Recovery() templ.Component {
       const recoveryRateValue = document.getElementById("recoveryRateValue");
       const recoveryRateSummary = document.getElementById("recoveryRateSummary");
       const recoveryProgressBar = document.getElementById("recoveryProgressBar");
+      const amountPayableValue = document.getElementById("amountPayableValue");
       const recoveredPrefinance = document.getElementById("recoveredPrefinance");
       const outstandingBalance = document.getElementById("outstandingBalance");
       const totalPrefinanceValue = document.getElementById("totalPrefinanceValue");
@@ -559,6 +565,7 @@ func Recovery() templ.Component {
         if (recoveryRateValue) recoveryRateValue.textContent = "...";
         if (recoveryRateSummary) recoveryRateSummary.textContent = "Loading recovery snapshot...";
         if (recoveryProgressBar) recoveryProgressBar.style.width = "0%";
+        if (amountPayableValue) amountPayableValue.textContent = "...";
         if (recoveredPrefinance) recoveredPrefinance.textContent = "...";
         if (outstandingBalance) outstandingBalance.textContent = "...";
         if (totalPrefinanceValue) totalPrefinanceValue.textContent = "...";
@@ -567,6 +574,7 @@ func Recovery() templ.Component {
       function renderRecoveryDashboard(data) {
         const prefinance = Number(data.totalPrefinance || 0);
         const balance = Number(data.totalBalance || 0);
+        const amountPayable = Number(data.totalPayable || 0);
         const recoveredPrefinanceValue = Math.max(0, prefinance - balance);
         const recoveryPercent = prefinance > 0 ? (recoveredPrefinanceValue / prefinance) * 100 : 0;
 
@@ -579,6 +587,7 @@ func Recovery() templ.Component {
         if (recoveryProgressBar) {
           recoveryProgressBar.style.width = Math.max(0, Math.min(100, recoveryPercent)).toFixed(1) + "%";
         }
+        if (amountPayableValue) amountPayableValue.textContent = formatCurrency(amountPayable);
         if (recoveredPrefinance) recoveredPrefinance.textContent = formatCurrency(recoveredPrefinanceValue);
         if (outstandingBalance) outstandingBalance.textContent = formatCurrency(balance);
         if (totalPrefinanceValue) totalPrefinanceValue.textContent = formatCurrency(prefinance);

@@ -387,7 +387,8 @@ func (r *FarmerRepository) GetZoneStats(ctx context.Context, zoneName string, fr
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) AND total_amount <> 0 THEN GREATEST(total_amount - prefinance, 0) ELSE 0 END), 0)::float8 AS total_payable
 		FROM
 			farmers
 		WHERE
@@ -426,7 +427,8 @@ func (r *FarmerRepository) GetGeneralStats(ctx context.Context, fromDate, toDate
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) AND total_amount <> 0 THEN GREATEST(total_amount - prefinance, 0) ELSE 0 END), 0)::float8 AS total_payable
 		FROM
 			farmers
 		WHERE
@@ -464,7 +466,8 @@ func (r *FarmerRepository) GetCommunityStats(ctx context.Context, zoneName, comm
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_kg_brought ELSE 0 END), 0)::float8 AS total_kg_brought,
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN total_amount ELSE 0 END), 0)::float8 AS total_amount,
 			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN prefinance ELSE 0 END), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) THEN balance ELSE 0 END), 0)::float8 AS total_balance,
+			COALESCE(SUM(CASE WHEN (@from_date::date IS NULL OR updated_at::date >= @from_date::date) AND (@to_date::date IS NULL OR updated_at::date <= @to_date::date) AND total_amount <> 0 THEN GREATEST(total_amount - prefinance, 0) ELSE 0 END), 0)::float8 AS total_payable
 		FROM
 			farmers
 		WHERE
@@ -504,7 +507,8 @@ func (r *FarmerRepository) GetGeneralOverview(ctx context.Context) (*farmer.Anal
 			COALESCE(SUM(total_kg_brought), 0)::float8 AS total_kg_brought,
 			COALESCE(SUM(total_amount), 0)::float8 AS total_amount,
 			COALESCE(SUM(prefinance), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(balance), 0)::float8 AS total_balance
+			COALESCE(SUM(balance), 0)::float8 AS total_balance,
+			COALESCE(SUM(CASE WHEN total_amount <> 0 THEN GREATEST(total_amount - prefinance, 0) ELSE 0 END), 0)::float8 AS total_payable
 		FROM
 			farmers
 		WHERE
@@ -538,7 +542,8 @@ func (r *FarmerRepository) GetZoneOverview(ctx context.Context, zoneName string)
 			COALESCE(SUM(total_kg_brought), 0)::float8 AS total_kg_brought,
 			COALESCE(SUM(total_amount), 0)::float8 AS total_amount,
 			COALESCE(SUM(prefinance), 0)::float8 AS total_prefinance,
-			COALESCE(SUM(balance), 0)::float8 AS total_balance
+			COALESCE(SUM(balance), 0)::float8 AS total_balance,
+			COALESCE(SUM(CASE WHEN total_amount <> 0 THEN GREATEST(total_amount - prefinance, 0) ELSE 0 END), 0)::float8 AS total_payable
 		FROM
 			farmers
 		WHERE

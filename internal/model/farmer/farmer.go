@@ -63,6 +63,7 @@ type FarmerStats struct {
 	TotalAmount      float64 `json:"totalAmount" db:"total_amount"`
 	TotalPrefinance  float64 `json:"totalPrefinance" db:"total_prefinance"`
 	TotalBalance     float64 `json:"totalBalance" db:"total_balance"` // optional but useful
+	TotalPayable     float64 `json:"totalPayable" db:"total_payable"`
 }
 
 type CommunityFarmerStats struct {
@@ -75,6 +76,7 @@ type CommunityFarmerStats struct {
 	TotalAmount     float64 `json:"totalAmount" db:"total_amount"`
 	TotalPrefinance float64 `json:"totalPrefinance" db:"total_prefinance"`
 	TotalBalance    float64 `json:"totalBalance" db:"total_balance"`
+	TotalPayable    float64 `json:"totalPayable" db:"total_payable"`
 }
 
 type AnalyticsOverviewStats struct {
@@ -87,6 +89,7 @@ type AnalyticsOverviewStats struct {
 	TotalAmount      float64 `json:"totalAmount" db:"total_amount"`
 	TotalPrefinance  float64 `json:"totalPrefinance" db:"total_prefinance"`
 	TotalBalance     float64 `json:"totalBalance" db:"total_balance"`
+	TotalPayable     float64 `json:"totalPayable" db:"total_payable"`
 }
 
 type ZoneCommunitiesResponse struct {
