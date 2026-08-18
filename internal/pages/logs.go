@@ -314,9 +314,11 @@ func Logs() templ.Component {
             const weight = Number(log.weightKg || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
             const amount = Number(log.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
             item.innerHTML = dateTime + " <span class=\"log-strong\">" + toPascalText(log.updatedBy) + "</span> from <span class=\"log-strong\">" + toPascalText(log.zoneName) + "</span> weighed <span class=\"log-strong\">" + weight + "kg</span> of nuts at a total value of GHc <span class=\"log-strong\">" + amount + "</span> in communities: <span class=\"log-strong\">" + communitiesText + "</span>.";
-          } else {
+          } else if (log.action === "created") {
             const countLabel = Number(log.count) === 1 ? "farmer" : "farmers";
             item.innerHTML = dateTime + " <span class=\"log-strong\">" + toPascalText(log.createdBy) + "</span> from <span class=\"log-strong\">" + toPascalText(log.zoneName) + "</span> added <span class=\"log-strong\">" + log.count + "</span> " + countLabel + " to communities: <span class=\"log-strong\">" + communitiesText + "</span>.";
+          } else {
+            return;
           }
           namesList.appendChild(item);
         });
