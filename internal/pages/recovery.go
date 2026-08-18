@@ -289,7 +289,7 @@ func Recovery() templ.Component {
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 12px;
+      padding: 12px 12px 12px 16px;
       min-height: 108px;
       display: grid;
       gap: 6px;
