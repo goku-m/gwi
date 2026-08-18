@@ -509,11 +509,6 @@ func Recovery() templ.Component {
             <div class="dashboard-progress" aria-hidden="true"><span id="recoveryProgressBar"></span></div>
           </article>
           <article class="dashboard-card">
-            <span class="dashboard-label">Amount Payable</span>
-            <p class="dashboard-value good" id="amountPayableValue">GH&#8373; 0.00</p>
-            <span class="dashboard-subvalue">Amount paid to farmers for nuts</span>
-          </article>
-          <article class="dashboard-card">
             <span class="dashboard-label">Recovered</span>
             <p class="dashboard-value good" id="recoveredPrefinance">GH&#8373; 0.00</p>
             <span class="dashboard-subvalue">Prefinance already recovered</span>
@@ -522,6 +517,11 @@ func Recovery() templ.Component {
             <span class="dashboard-label">Outstanding</span>
             <p class="dashboard-value warn" id="outstandingBalance">GH&#8373; 0.00</p>
             <span class="dashboard-subvalue">Amount still to recover</span>
+          </article>
+          <article class="dashboard-card">
+            <span class="dashboard-label">Amount Payable</span>
+            <p class="dashboard-value good" id="amountPayableValue">GH&#8373; 0.00</p>
+            <span class="dashboard-subvalue">Amount paid to farmers for nuts</span>
           </article>
           <article class="dashboard-card">
             <span class="dashboard-label">Total Prefinance</span>
