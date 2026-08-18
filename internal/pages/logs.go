@@ -311,8 +311,7 @@ func Logs() templ.Component {
           const communitiesText = communityNames ? toPascalText(communityNames) : "N/A";
           const dateTime = "<span class=\"log-datetime\">" + log.date + ": " + log.time + "</span>";
           if (log.action === "updated") {
-            const amount = Number(log.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
-            item.innerHTML = dateTime + " <span class=\"log-strong\">" + toPascalText(log.updatedBy) + "</span> from <span class=\"log-strong\">" + toPascalText(log.zoneName) + "</span> issued <span class=\"log-strong\">GHc</span> <span class=\"log-strong\">" + amount + "</span> in <span class=\"log-strong\">Pre-Finance</span> in communities: <span class=\"log-strong\">" + communitiesText + "</span>.";
+            item.innerHTML = dateTime + " <span class=\"log-strong\">" + toPascalText(log.updatedBy) + "</span> from <span class=\"log-strong\">" + toPascalText(log.zoneName) + "</span> updated records in communities: <span class=\"log-strong\">" + communitiesText + "</span>.";
           } else if (log.action === "weighed") {
             const weight = Number(log.weightKg || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
             const amount = Number(log.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
