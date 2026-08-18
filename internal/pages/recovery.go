@@ -501,7 +501,7 @@ func Recovery() templ.Component {
           </article>
           <article class="dashboard-card">
             <span class="dashboard-label">Amount Payable</span>
-            <p class="dashboard-value good" id="amountPayableValue">GH&#8373; 0.00</p>
+            <p class="dashboard-value warn" id="amountPayableValue">GH&#8373; 0.00</p>
             <span class="dashboard-subvalue">Amount to pay</span>
           </article>
           <article class="dashboard-card">
