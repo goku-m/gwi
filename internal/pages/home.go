@@ -335,6 +335,15 @@ func Home() templ.Component {
       letter-spacing: -0.02em;
       color: var(--text);
     }
+    .currency-symbol {
+      font-size: 0.78em;
+      font-weight: 700;
+      vertical-align: baseline;
+      margin-right: 0.18em;
+    }
+    .currency-amount {
+      font-size: 1.1em;
+    }
     .card-subvalue {
       color: var(--muted);
       font-size: 0.82rem;
@@ -685,7 +694,7 @@ func Home() templ.Component {
       }
 
       function formatCurrency(value) {
-        return "GH\u20B5 " + formatNumber(value, 2);
+        return "<span class=\"currency-symbol\">GH\u20B5</span><span class=\"currency-amount\">" + formatNumber(value, 2) + "</span>";
       }
 
       function setLoading() {
@@ -704,7 +713,7 @@ func Home() templ.Component {
         totalCommunities.textContent = formatNumber(data.totalCommunities, 0);
         dailySyncs.textContent = formatNumber(data.dailySyncs, 0);
         totalKgBrought.textContent = formatNumber(data.totalKgBrought, 2) + " kg";
-        totalAmount.textContent = formatCurrency(data.totalAmount);
+        totalAmount.innerHTML = formatCurrency(data.totalAmount);
         renderCharts(data);
       }
 

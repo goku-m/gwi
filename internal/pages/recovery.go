@@ -313,10 +313,10 @@ func Recovery() templ.Component {
       font-size: 0.78em;
       font-weight: 700;
       vertical-align: baseline;
-      margin-right: 0.08em;
+      margin-right: 0.18em;
     }
     .currency-amount {
-      font-size: 1em;
+      font-size: 1.1em;
     }
     .dashboard-value.good { color: var(--accent); }
     .dashboard-value.warn { color: #b45309; }
