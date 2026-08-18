@@ -344,6 +344,15 @@ func Home() templ.Component {
     .currency-amount {
       font-size: 1.1em;
     }
+    .metric-amount {
+      font-size: 1.1em;
+    }
+    .metric-unit {
+      font-size: 0.78em;
+      font-weight: 700;
+      vertical-align: baseline;
+      margin-left: 0.18em;
+    }
     .card-subvalue {
       color: var(--muted);
       font-size: 0.82rem;
@@ -712,7 +721,7 @@ func Home() templ.Component {
         totalFarmers.innerHTML = formatNumber(latestTotalFarmers, 0) + " <span class=\"metric-increment\">↑" + formatNumber(latestNewFarmers, 0) + "</span>";
         totalCommunities.textContent = formatNumber(data.totalCommunities, 0);
         dailySyncs.textContent = formatNumber(data.dailySyncs, 0);
-        totalKgBrought.textContent = formatNumber(data.totalKgBrought, 2) + " kg";
+        totalKgBrought.innerHTML = "<span class=\"metric-amount\">" + formatNumber(data.totalKgBrought, 2) + "</span><span class=\"metric-unit\">kg</span>";
         totalAmount.innerHTML = formatCurrency(data.totalAmount);
         renderCharts(data);
       }
