@@ -309,6 +309,15 @@ func Recovery() templ.Component {
       letter-spacing: -0.02em;
       color: var(--text);
     }
+    .currency-symbol {
+      font-size: 0.78em;
+      font-weight: 700;
+      vertical-align: baseline;
+      margin-right: 0.08em;
+    }
+    .currency-amount {
+      font-size: 1em;
+    }
     .dashboard-value.good { color: var(--accent); }
     .dashboard-value.warn { color: #b45309; }
     .dashboard-value.accent { color: var(--accent); }
@@ -552,7 +561,7 @@ func Recovery() templ.Component {
       }
 
       function formatCurrency(value) {
-        return "GH\u20B5 " + formatNumber(value, 2);
+        return "<span class=\"currency-symbol\">GH\u20B5</span><span class=\"currency-amount\">" + formatNumber(value, 2) + "</span>";
       }
 
       function normalizeForCompare(value) {
@@ -582,15 +591,15 @@ func Recovery() templ.Component {
           recoveryRateValue.textContent = recoveryPercent.toFixed(1) + "%";
         }
         if (recoveryRateSummary) {
-          recoveryRateSummary.textContent = formatCurrency(recoveredPrefinanceValue) + " recovered of " + formatCurrency(prefinance);
+          recoveryRateSummary.innerHTML = formatCurrency(recoveredPrefinanceValue) + " recovered of " + formatCurrency(prefinance);
         }
         if (recoveryProgressBar) {
           recoveryProgressBar.style.width = Math.max(0, Math.min(100, recoveryPercent)).toFixed(1) + "%";
         }
-        if (amountPayableValue) amountPayableValue.textContent = formatCurrency(amountPayable);
-        if (recoveredPrefinance) recoveredPrefinance.textContent = formatCurrency(recoveredPrefinanceValue);
-        if (outstandingBalance) outstandingBalance.textContent = formatCurrency(balance);
-        if (totalPrefinanceValue) totalPrefinanceValue.textContent = formatCurrency(prefinance);
+        if (amountPayableValue) amountPayableValue.innerHTML = formatCurrency(amountPayable);
+        if (recoveredPrefinance) recoveredPrefinance.innerHTML = formatCurrency(recoveredPrefinanceValue);
+        if (outstandingBalance) outstandingBalance.innerHTML = formatCurrency(balance);
+        if (totalPrefinanceValue) totalPrefinanceValue.innerHTML = formatCurrency(prefinance);
       }
 
       function renderCommunityOptions(communities) {
